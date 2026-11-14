@@ -41,6 +41,7 @@ jolt hello        # run examples/hello.clj
 jolt dashboard    # run examples/dashboard.clj
 jolt studio       # run examples/studio.clj
 jolt devtools     # run examples/devtools.clj
+jolt assistant    # run examples/assistant.clj
 jolt test         # value and interaction tests, no display needed
 ```
 
@@ -57,10 +58,13 @@ CUI `a8f71c0`. If a newer CUI has changed its headers, run `jolt gen` after `jol
 | `dashboard` | Metrics with sparklines, line and donut charts, a settings form, a dialog and toasts. |
 | `studio` | A mixer: knobs, faders, animated level meters, a radial gauge, readouts and a step slider. |
 | `devtools` | Three tabs. A code editor with a live markdown preview. A candlestick chart, status tags and a cron field that describes its schedule. A terminal with ANSI colors and a few built-in commands. |
+| `assistant` | A port of CUI's own [`assistant.c`](https://yappologistic.github.io/CUI/#/app/assistant): a chat app with reasoning, tool calls, a plan, sources, a model picker and a composer. Sending a message plays a scripted answer. The layout adapts to the window width. |
 
 ![The studio example](docs/images/studio.png)
 
 ![The devtools terminal tab](docs/images/devtools-terminal.png)
+
+![The assistant example](docs/images/assistant.png)
 
 To use it from your own project, add this repo's `src` to your paths and declare the
 library in your `deps.edn`, as this repo does:

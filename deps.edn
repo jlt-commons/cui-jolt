@@ -54,4 +54,8 @@
 
   devtools
   {:doc "Run the devtools (editor, markdown, candlestick) example"
-   :task (shell "jolt" "-A:examples" "-m" "devtools")}}}
+   :task (shell "jolt" "-A:examples" "-m" "devtools")}
+
+  assistant
+  {:doc "Run the assistant (chat app) example, a port of CUI's assistant.c"
+   :task (shell "jolt" "-A:examples" "-m" "assistant")}}}
