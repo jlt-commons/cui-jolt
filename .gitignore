@@ -1,0 +1,6 @@
+native/CUI/
+native/build/
+native/libcui.*
+native/cui.dll
+gen/all.i
+gen/__pycache__/

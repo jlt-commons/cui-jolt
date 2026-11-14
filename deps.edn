@@ -1,0 +1,57 @@
+{:paths ["src"]
+
+ ;; libcui is loaded at startup, before any namespace. `jolt native` builds it
+ ;; from source into native/; an installed libcui on the loader path also works.
+ :jolt/native [{:name "cui"
+                :linux   ["native/libcui.so" "libcui.so.1" "libcui.so"]
+                :darwin  ["native/libcui.dylib" "libcui.1.dylib" "libcui.dylib"]
+                :windows ["native/cui.dll" "cui.dll"]}]
+
+ :aliases {:test {:extra-paths ["test" "examples"]}
+           :examples {:extra-paths ["examples"]}}
+
+ :tasks
+ {:requires ([babashka.fs :as fs])
+  :init (do (def os (System/getProperty "os.name"))
+            (def lib-file (cond (re-find #"(?i)mac" os) "libcui.dylib"
+                                (re-find #"(?i)win" os) "cui.dll"
+                                :else "libcui.so"))
+            (def cui-src (or (System/getenv "CUI_SRC") "native/CUI")))
+
+  native
+  {:doc "Clone CUI (or use $CUI_SRC) and build native/libcui as a shared library"
+   :task (do
+           (when-not (fs/exists? cui-src)
+             (shell "git" "clone" "--depth" "1" "https://github.com/yappologistic/CUI.git" cui-src))
+           (shell "cmake" "-S" cui-src "-B" "native/build" "-DCMAKE_BUILD_TYPE=Release"
+                  "-DCUI_BUILD_SHARED=ON" "-DCUI_BUILD_EXAMPLES=OFF" "-DCUI_BUILD_TESTS=OFF")
+           (shell "cmake" "--build" "native/build" "--config" "Release" "--parallel")
+           (let [built (first (filter fs/exists? [(str "native/build/" lib-file)
+                                                  (str "native/build/Release/" lib-file)]))]
+             (fs/copy built (str "native/" lib-file) {:replace-existing true})
+             (println "built" (str "native/" lib-file))))}
+
+  gen
+  {:doc "Regenerate src/cui/{raw,spec,core}.clj from the CUI headers (needs python3 + pycparser)"
+   :task (shell "python3" "gen/gen.py" cui-src)}
+
+  test
+  {:doc "Run the value and interaction tests (no display needed)"
+   :task (do (shell "jolt" "-A:test" "-m" "values-test")
+             (shell "jolt" "-A:test" "-m" "interaction-test"))}
+
+  hello
+  {:doc "Run the hello example"
+   :task (shell "jolt" "-A:examples" "-m" "hello")}
+
+  dashboard
+  {:doc "Run the dashboard example"
+   :task (shell "jolt" "-A:examples" "-m" "dashboard")}
+
+  studio
+  {:doc "Run the studio (mixer) example"
+   :task (shell "jolt" "-A:examples" "-m" "studio")}
+
+  devtools
+  {:doc "Run the devtools (editor, markdown, candlestick) example"
+   :task (shell "jolt" "-A:examples" "-m" "devtools")}}}
