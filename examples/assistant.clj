@@ -26,6 +26,10 @@
 (def seen (atom -1))
 (def narrow (atom false))
 (def drawer (atom false))
+(def branch (atom nil))  ; the reply being split: {:chat :turn :blocks [..] :picked #{..}}
+(def branch-open (atom false))
+(def branch-quote (atom ""))
+(def branch-ask (atom ""))
 
 (defn now [] (System/currentTimeMillis))
 
@@ -92,7 +96,9 @@
       "tool_call_update" (update-turn! sessionId #(update-tool % u))
       "plan" (update-chat! sessionId assoc :plan (:entries u))
       "usage_update" (update-chat! sessionId assoc :usage (select-keys u [:used :size :cost]))
-      "session_info_update" (when (:title u) (update-chat! sessionId assoc :title (:title u)))
+      ;; a fork's agent title is the parent's plus "(fork)"; a subchat keeps its own
+      "session_info_update" (when (:title u)
+                              (update-chat! sessionId #(cond-> % (not (:parent %)) (assoc :title (:title u)))))
       nil)))
 
 (defn on-request [c id method params]
@@ -118,39 +124,86 @@
                                                   {:role :agent :done true
                                                    :items [{:type :error :text (str "Model: " (:message e))}]}))))))
 
-(defn new-chat! []
+(defn open-session!
+  "Adds a chat, shows it and starts its ACP session with method (session/new
+  or session/fork). (on-ready i) runs once the session exists."
+  [chat method params on-ready]
   (let [i (count @chats)]
-    (swap! chats conj {:title "New chat" :turns [] :plan []})
+    (swap! chats conj (merge {:title "New chat" :turns [] :plan []} chat))
     (reset! current i)
-    (acp/request! @conn "session/new" {:cwd @cwd :mcpServers []}
+    (acp/request! @conn method (merge {:cwd @cwd :mcpServers []} params)
                   (fn [r e]
                     (if e
-                      (reset! status (str "Could not start a session: " (:message e)))
+                      (swap! chats assoc-in [i :turns]
+                             [{:role :agent :done true
+                               :items [{:type :error :text (str "Could not start a session: " (:message e))}]}])
                       (let [sid (:sessionId r)
                             opt (first (filter #(= "model" (:id %)) (:configOptions r)))]
                         (swap! chats assoc-in [i :sid] sid)
                         (when (and opt (empty? @models))
                           (reset! models (:options opt))
                           (reset! model (or (first (keep-indexed #(when (= (:value %2) (:currentValue opt)) %1)
-                                                                 (:options opt)))
+                                                                 @models))
                                             0)))
                         (when (and opt (not= (:value (get @models @model)) (:currentValue opt)))
                           (set-model! sid))
-                        (swap! version inc)))))))
+                        (when on-ready (on-ready i))))
+                    (swap! version inc)))))
 
-(defn send-prompt! [text]
-  (let [{:keys [sid busy]} (get @chats @current)]
-    (when (and sid (not busy) (not (str/blank? text)))
-      (update-chat! sid #(-> %
-                             (assoc :busy true)
-                             (update :turns conj {:role :user :text text}
-                                     {:role :agent :thought "" :items [] :t0 (now)})))
-      (acp/request! @conn "session/prompt" {:sessionId sid :prompt [{:type "text" :text text}]}
-                    (fn [r e]
-                      (update-turn! sid #(cond-> (assoc % :done true :t1 (now))
-                                           e (add-item {:type :error :text (:message e)})
-                                           (= "cancelled" (:stopReason r)) (add-item {:type :note :text "Stopped"})))
-                      (update-chat! sid assoc :busy false))))))
+(defn new-chat! [] (open-session! {} "session/new" {} nil))
+
+(declare send-prompt!)
+
+(defn blocks
+  "Splits a markdown reply into the parts you can quote: paragraphs and list
+  items. A fenced code block stays in one part."
+  [text]
+  (loop [[l & ls :as all] (str/split-lines text) cur [] out [] fence false]
+    (if (empty? all)
+      (vec (remove str/blank? (map #(str/join "\n" %) (conj out cur))))
+      (let [f? (str/starts-with? (str/triml l) "```")]
+        (cond
+          fence (recur ls (conj cur l) out (not f?))
+          f? (recur ls (conj cur l) out true)
+          (str/blank? l) (recur ls [] (conj out cur) false)
+          (re-find #"^\s{0,3}([-*+]|\d+[.)])\s" l) (recur ls [l] (conj out cur) false)
+          :else (recur ls (conj cur l) out false))))))
+
+(defn quoted [quote question]
+  (str/trim (str (when-not (str/blank? quote)
+                   (str (str/join "\n" (map #(str "> " %) (str/split-lines (str/trim quote)))) "\n\n"))
+                 question)))
+
+(defn branch!
+  "Forks the parent chat's session into a subchat and asks about the quote
+  there. The parent chat is left as it is."
+  [parent turn quote question]
+  (let [psid (:sid (get @chats parent))
+        text (quoted quote question)
+        title (str/trim (if (str/blank? question) quote question))]
+    (when (and psid (not (str/blank? text)))
+      ;; ponytail: the fork carries the whole parent conversation, also turns after
+      ;; the quoted one; the quote is what points Claude at the right part
+      (open-session! {:title (if (> (count title) 40) (str (subs title 0 40) "…") title)
+                      :parent parent :from turn}
+                     "session/fork" {:sessionId psid}
+                     #(send-prompt! % text)))))
+
+(defn send-prompt!
+  ([text] (send-prompt! @current text))
+  ([i text]
+   (let [{:keys [sid busy]} (get @chats i)]
+     (when (and sid (not busy) (not (str/blank? text)))
+       (update-chat! sid #(-> %
+                              (assoc :busy true)
+                              (update :turns conj {:role :user :text text}
+                                      {:role :agent :thought "" :items [] :t0 (now)})))
+       (acp/request! @conn "session/prompt" {:sessionId sid :prompt [{:type "text" :text text}]}
+                     (fn [r e]
+                       (update-turn! sid #(cond-> (assoc % :done true :t1 (now))
+                                            e (add-item {:type :error :text (:message e)})
+                                            (= "cancelled" (:stopReason r)) (add-item {:type :note :text "Stopped"})))
+                       (update-chat! sid assoc :busy false)))))))
 
 (defn cancel! []
   (when-let [sid (:sid (get @chats @current))]
@@ -182,12 +235,18 @@
       (when (and (ui/icon-button u :square-pen {:size :sm :tooltip "New chat"}) (nil? @status))
         (new-chat!) (reset! drawer false)))
     (ui/nav-section u "Chats")
-    (doseq [[i {:keys [title busy]}] (reverse (map-indexed vector @chats))]
-      (ui/push-id-int u i)
-      (when (ui/nav-item u title {:icon :message-square :selected (= @current i) :group "chats"
-                                  :badge (when busy "…")})
-        (reset! current i) (reset! drawer false))
-      (ui/pop-id u))
+    ;; newest first, each subchat indented under the chat it came from
+    (let [kids (group-by :parent (map-indexed #(assoc %2 :i %1) @chats))]
+      ((fn walk [parent depth]
+         (doseq [{:keys [i title busy]} (reverse (kids parent))]
+           (ui/push-id-int u i)
+           (ui/box u {:width :fill :pad-left (* 16 depth)}
+             (when (ui/nav-item u title {:icon (if parent :git-branch :message-square) :selected (= @current i)
+                                         :group "chats" :badge (when busy "…")})
+               (reset! current i) (reset! drawer false)))
+           (ui/pop-id u)
+           (walk i (inc depth))))
+       nil 0))
     (ui/spacer u)
     (ui/row u {:gap 8 :align :center :pad-x 6}
       (ui/icon u (if @status :circle-alert :sparkles) 14 (if @status :text-muted :accent))
@@ -200,7 +259,13 @@
 
 (def tool-status {"pending" :pending "in_progress" :running "completed" :done "failed" :failed})
 
-(defn agent-turn [u k {:keys [thought items done t0 thought-end]} prompt]
+(defn open-branch! [i k text]
+  (reset! branch {:chat i :turn k :blocks (blocks text) :picked #{}})
+  (reset! branch-quote "")
+  (reset! branch-ask "")
+  (reset! branch-open true))
+
+(defn agent-turn [u i k {:keys [thought items done t0 thought-end]} prompt chat-busy]
   (ui/id-scope u (str "turn" k)
     (when (seq thought)
       (ui/reasoning u "think" {:thinking (and (not done) (nil? thought-end))
@@ -222,8 +287,20 @@
       (ui/agent-status u "Thinking" {:status :running :seconds (secs t0 nil)}))
     (when done
       (let [text (str/join "\n\n" (keep :text (filter #(= :text (:type %)) items)))
-            act (ui/response-actions u "actions" {:copy-text text :no-share true})]
-        (when (pos? (bit-and act raw/CUI_RESPONSE_REGENERATE)) (send-prompt! prompt))))))
+            subs* (keep-indexed (fn [ci c] (when (and (= i (:parent c)) (= k (:from c))) [ci c])) @chats)]
+        (ui/row u {:gap 4 :align :center :wrap true}
+          (let [act (ui/response-actions u "actions" {:copy-text text :no-share true})]
+            (when (pos? (bit-and act raw/CUI_RESPONSE_REGENERATE)) (send-prompt! prompt)))
+          (when (and (seq text)
+                     (ui/button u "Subchat" {:icon :git-branch :variant :ghost :size :sm :disabled (boolean chat-busy)
+                                             :tooltip "Ask about part of this reply in a new chat"}))
+            (open-branch! i k text)))
+        (doseq [[ci c] subs*]
+          (ui/push-id-int u ci)
+          (ui/row u {:gap 6 :align :center}
+            (ui/icon u :git-branch 14 :text-muted)
+            (when (ui/link u (:title c)) (reset! current ci)))
+          (ui/pop-id u))))))
 
 (def suggestions [{:icon :search :title "Explain this project" :detail "Read the README and the code layout"}
                   {:icon :code :title "Find a bug" :detail "Look for something that could break"}
@@ -239,13 +316,13 @@
 
 (defn conversation [u]
   (let [n? @narrow
-        {:keys [sid turns busy usage]} (get @chats @current)]
+        {:keys [sid turns busy usage parent]} (get @chats @current)]
     (ui/column u {:width :fill :height :fill}
       (ui/row u {:width :fill :pad-x (if n? 12 20) :pad-y 12 :gap (if n? 6 10) :align :center}
         (when (and n? (ui/icon-button u :menu {:tooltip "Chats"})) (reset! drawer true))
         (when (seq @models)
-          (when (ui/model-picker u "model" (mapv (fn [m] {:name (:name m) :detail (:description m)}) @models)
-                                 model {:ghost true :placement :bottom-start})
+          ;; a searchable select, since CUI's model-picker menu does not scroll
+          (when (ui/select u "model" (mapv :name @models) model {:searchable true :width 220})
             (when sid (set-model! sid))))
         (ui/spacer u)
         (when (:size usage) (ui/context-meter u "ctx" (:used usage) (:size usage))))
@@ -259,12 +336,17 @@
           (ui/column u {:width :fill :max-width 760 :gap 14}
             (cond
               @status (ui/agent-status u @status {:status (if (str/starts-with? @status "Starting") :running :failed)})
-              (nil? sid) (ui/agent-status u "Starting a session" {:status :running})
+              (and (nil? sid) (empty? turns)) (ui/agent-status u "Starting a session" {:status :running})
               (empty? turns) (empty-state u))
+            (when parent
+              (ui/row u {:gap 6 :align :center}
+                (ui/icon u :git-branch 14 :text-muted)
+                (ui/text u "Subchat of" {:size 13 :color :text-muted})
+                (when (ui/link u (:title (get @chats parent))) (reset! current parent))))
             (doseq [[k t] (map-indexed vector turns)]
               (if (= :user (:role t))
-                (ui/chat-message u (:text t) {:mine true})
-                (agent-turn u k t (:text (get turns (dec k)))))))))
+                (ui/chat-message u (:text t) {:mine true :markdown true})
+                (agent-turn u @current k t (:text (get turns (dec k))) busy))))))
       (ui/row u {:width :fill :justify :center :pad-x (if n? 12 24) :pad-bottom (if n? 12 20)}
         (ui/column u {:width :fill :max-width 760 :gap 8}
           (let [ev (ui/chat-composer u "composer" draft {:placeholder "Ask Claude" :busy (boolean busy)})]
@@ -305,6 +387,33 @@
             (answer-permission! {:outcome "selected" :optionId optionId}))
           (ui/pop-id u))))))
 
+(defn branch-dialog [u]
+  ;; CUI text has no mouse selection, so you pick whole parts and trim the quote
+  (when-let [{:keys [chat turn blocks picked]} @branch]
+    (ui/dialog u "Start a subchat" branch-open
+               {:description "Pick the parts of the reply to ask about. This chat stays as it is." :width 640}
+      (ui/scroll u {:id "blocks" :width :fill :height 260 :gap 8}
+        (doseq [[j b] (map-indexed vector blocks)]
+          (ui/push-id-int u j)
+          (let [clicked (ui/card-begin u {:hoverable true :selected (contains? picked j) :pad 10 :width :fill})]
+            (ui/markdown u "b" b {:width :fill :size 13.5 :compact true})
+            (ui/card-end u)
+            (when clicked
+              (let [p (if (picked j) (disj picked j) (conj picked j))]
+                (swap! branch assoc :picked p)
+                (reset! branch-quote (str/join "\n\n" (map blocks (sort p)))))))
+          (ui/pop-id u)))
+      (ui/textarea u "quote" branch-quote {:label "Quote" :placeholder "Pick parts above, then cut this down to what matters"
+                                           :height 90 :width :fill})
+      (let [ev (ui/input u "ask" branch-ask {:label "Your message" :placeholder "What do you want to know about it?"
+                                             :autofocus true :width :fill})
+            ready (not (str/blank? (quoted @branch-quote @branch-ask)))
+            go (fn [] (reset! branch-open false) (branch! chat turn @branch-quote @branch-ask))]
+        (when (and ready (pos? (bit-and ev raw/CUI_SUBMITTED))) (go))
+        (ui/dialog-footer u
+          (when (ui/button u "Cancel" {:variant :ghost}) (reset! branch-open false))
+          (when (ui/button u "Start subchat" {:variant :primary :icon :git-branch :disabled (not ready)}) (go)))))))
+
 (defn frame [u]
   (let [vw (:x (ui/viewport-size u))]
     (when (and @conn (acp/busy? @conn))
@@ -318,6 +427,7 @@
       (when (>= vw 1180) (ui/separator u) (side-panel u)))
     (ui/sheet u "Muse" drawer {:side :left :size 300}
       (sidebar u true))
+    (branch-dialog u)
     (permission-dialog u)))
 
 (defn -main [& [dir]]

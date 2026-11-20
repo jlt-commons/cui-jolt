@@ -131,10 +131,3 @@
 
 (defn close! [conn] (p/destroy-tree (:proc conn)))
 
-(defn -main [& _]
-  ;; self-check: no agent needed
-  (let [src "{\"a\":[1,-2.5e1,\"x\\u00e9\\n\\\"\",null,true,false],\"b\":{},\"c\":[],\"e\":\"\\ud83d\\ude00\"}"
-        v (read-json src)]
-    (assert (= v {:a [1 -25.0 "xé\n\"" nil true false] :b {} :c [] :e "😀"}) (pr-str v))
-    (assert (= v (read-json (write-json v))))
-    (println "acp json ok")))

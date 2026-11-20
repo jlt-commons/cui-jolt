@@ -38,7 +38,8 @@
   test
   {:doc "Run the value and interaction tests (no display needed)"
    :task (do (shell "jolt" "-A:test" "-m" "values-test")
-             (shell "jolt" "-A:test" "-m" "interaction-test"))}
+             (shell "jolt" "-A:test" "-m" "interaction-test")
+             (shell "jolt" "-A:test" "-m" "assistant-test"))}
 
   hello
   {:doc "Run the hello example"
