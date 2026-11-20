@@ -57,5 +57,5 @@
    :task (shell "jolt" "-A:examples" "-m" "devtools")}
 
   assistant
-  {:doc "Run the assistant (chat app) example, a port of CUI's assistant.c"
+  {:doc "Run the assistant: a chat app talking to Claude over ACP (needs node)"
    :task (shell "jolt" "-A:examples" "-m" "assistant")}}}
