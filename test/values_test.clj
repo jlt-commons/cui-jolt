@@ -40,6 +40,13 @@
   ;; struct return values
   (let [d (ui/date-today)]
     (check "date-today" (and (int? (:year d)) (<= 1 (:month d) 12))))
+  ;; a text argument must outlive a GC within its frame: CUI reads it when it
+  ;; paints, after every widget call of the frame has returned
+  (ui/with-frame
+    (let [p (impl/str-ptr (apply str "label-" (range 40)))]
+      (dotimes [_ 20] (System/gc) (vec (range 100000)))
+      (ffi/drain-auto-arenas!)
+      (check "string survives gc in frame" (= (apply str "label-" (range 40)) (ffi/ptr->string p)))))
   (if (seq @failures)
     (do (println "FAIL" @failures) (System/exit 1))
     (println "values test passed")))

@@ -52,7 +52,7 @@
   {2 #(move % (center (:switch @rects)))  3 press  4 release
    6 #(move % (center (:button @rects)))  7 press  8 release
    10 #(move % (center (:input @rects))) 11 press 12 release
-   14 #(raw/cui_input_text % "!")
+   14 #(ui/input-text % "!")
    16 #(move % (tab-two (:tabs @rects)))  17 press 18 release
    ;; open the modal dialog, then Escape closes it and CUI clears the flag
    20 (fn [_] (reset! dialog-open true))
@@ -61,7 +61,7 @@
    ;; after the dialog has animated out, type a command into the terminal;
    ;; it comes back exactly once as :command
    42 #(move % (center (:term @rects))) 43 press 44 release
-   46 #(raw/cui_input_text % "ls")
+   46 #(ui/input-text % "ls")
    48 #(raw/cui_input_key % raw/CUI_KEY_ENTER true 0)
    49 #(raw/cui_input_key % raw/CUI_KEY_ENTER false 0)})
 

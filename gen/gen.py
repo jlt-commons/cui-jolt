@@ -269,12 +269,15 @@ def param_kind(params, i):
     if pn == 'mods' and scalar_of(t) == ':int': return ('mods', False)
     return ('val ' + elem_kind(t), False)
 
-def raw_arg_type(t):
+def raw_arg_type(t, ret=False):
     s = tstr(t)
     if typedef_ptr(t): return ':pointer'
     if isinstance(t, c_ast.PtrDecl):
         const, inner = pointee(t)
-        if ident(inner) == 'char' and const: return ':string'
+        # A string argument goes in as a pointer into the frame arena
+        # (impl/str-ptr): CUI keeps text pointers until it paints, and jolt's
+        # own :string copy can be reclaimed by a GC before then.
+        if ident(inner) == 'char' and const and ret: return ':string'
         return ':pointer'
     tag = struct_of(t)
     if tag: return f'[:by-value {struct_desc(tag)}]'
@@ -282,7 +285,7 @@ def raw_arg_type(t):
 
 def raw_ret_type(t):
     if isinstance(t, c_ast.TypeDecl) and ident(t) == 'void': return ':void'
-    return raw_arg_type(t)
+    return raw_arg_type(t, ret=True)
 
 def ret_kind(t):
     if isinstance(t, c_ast.TypeDecl) and ident(t) == 'void': return None
@@ -374,9 +377,9 @@ def wrapper(name, ret, params, variadic, cname):
         if k == 'handle' or k == 'raw':
             plist.append(pn); call.append(pn)
         elif k == 'str':
-            plist.append(pn); call.append(f'(impl/str-arg {pn})')
+            plist.append(pn); call.append(f'(impl/str-ptr {pn})')
         elif k == 'str-len':
-            plist.append(pn); call.append(f'(impl/str-arg {pn})'); call.append(f'(impl/utf8-len {pn})')
+            plist.append(pn); call.append(f'(impl/str-ptr {pn})'); call.append(f'(impl/utf8-len {pn})')
         elif k == 'strs':
             plist.append(pn); call.append(f'(impl/strs-ptr {pn})'); call.append(f'(count {pn})')
         elif k == 'buf':
@@ -421,8 +424,8 @@ def wrapper(name, ret, params, variadic, cname):
     if variadic:
         # printf-style: format in Clojure, hand C a literal "%s"
         fmt_idx = plist.index(kebab(params[-1][0]))
-        call2 = list(call); call2[-1] = '"%s"'
-        body = f'(raw/{cname} {" ".join(call2)} (apply format {plist[fmt_idx]} args))'
+        call2 = list(call); call2[-1] = '(impl/str-ptr "%s")'
+        body = f'(raw/{cname} {" ".join(call2)} (impl/str-ptr (apply format {plist[fmt_idx]} args)))'
         plist = plist + ['&', 'args']
     if uses_wb:
         body = f'(impl/with-call [wb] {body})'
