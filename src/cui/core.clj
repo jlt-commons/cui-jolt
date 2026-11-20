@@ -158,7 +158,7 @@
   "Appends a line to a log-buffer: (log! buf :info \"Loaded %d rows\" n)."
   [buf level fmt & args]
   (let [s (apply format fmt args)]
-    (raw/cui_log_append_text buf (impl/enum-val :cui_log_level level) (ffi/read buf :double) s -1)))
+    (raw/cui_log_append_text buf (impl/enum-val :cui_log_level level) (ffi/read buf :double) (impl/str-ptr s) -1)))
 
 ;; ---- generated wrappers (one per C function)
 
@@ -265,7 +265,7 @@
 (defn input-text
   "void cui_input_text(cui_ctx * ui, const char * utf8)"
   [ui utf8]
-  (raw/cui_input_text ui (impl/str-arg utf8)))
+  (raw/cui_input_text ui (impl/str-ptr utf8)))
 
 (defn input-focus
   "void cui_input_focus(cui_ctx * ui, bool window_focused)"
@@ -310,7 +310,7 @@
 (defn set-clipboard-text
   "void cui_set_clipboard_text(cui_ctx * ui, const char * text)"
   [ui text]
-  (raw/cui_set_clipboard_text ui (impl/str-arg text)))
+  (raw/cui_set_clipboard_text ui (impl/str-ptr text)))
 
 (defn get-clipboard-text
   "const char * cui_get_clipboard_text(cui_ctx * ui)"
@@ -440,7 +440,7 @@
 (defn font-load-file
   "cui_font cui_font_load_file(cui_ctx * ui, const char * path)"
   [ui path]
-  (raw/cui_font_load_file ui (impl/str-arg path)))
+  (raw/cui_font_load_file ui (impl/str-ptr path)))
 
 (defn font-set-role
   "void cui_font_set_role(cui_ctx * ui, cui_font role, cui_font font)"
@@ -455,7 +455,7 @@
 (defn measure-text
   "cui_text_metrics cui_measure_text(cui_ctx * ui, cui_font font, float size, const char * text, int len)"
   [ui font size text]
-  (impl/with-call [wb] (let [dst (impl/alloc :cui_text_metrics)] (raw/cui_measure_text dst ui (impl/arg-val [:font] font) (impl/arg-val [:scalar :float] size) (impl/str-arg text) (impl/utf8-len text)) (impl/read-struct :cui_text_metrics dst))))
+  (impl/with-call [wb] (let [dst (impl/alloc :cui_text_metrics)] (raw/cui_measure_text dst ui (impl/arg-val [:font] font) (impl/arg-val [:scalar :float] size) (impl/str-ptr text) (impl/utf8-len text)) (impl/read-struct :cui_text_metrics dst))))
 
 (defn box-begin
   "cui_id cui_box_begin(cui_ctx * ui, const cui_box * opts)"
@@ -520,13 +520,13 @@
 (defn scroll-to
   "void cui_scroll_to(cui_ctx * ui, const char * scroll_id, float y)"
   [ui scroll-id y]
-  (raw/cui_scroll_to ui (impl/str-arg scroll-id) (impl/arg-val [:scalar :float] y)))
+  (raw/cui_scroll_to ui (impl/str-ptr scroll-id) (impl/arg-val [:scalar :float] y)))
 
 (defn split-begin
   "void cui_split_begin(cui_ctx * ui, const char * id, float * ratio, const cui_split_opts * opts)"
   ([ui id ratio] (split-begin ui id ratio nil))
   ([ui id ratio opts]
-   (impl/with-call [wb] (raw/cui_split_begin ui (impl/str-arg id) (impl/ref-ptr! wb [:scalar :float] ratio) (impl/in-ptr! wb [:struct :cui_split_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_split_begin ui (impl/str-ptr id) (impl/ref-ptr! wb [:scalar :float] ratio) (impl/in-ptr! wb [:struct :cui_split_opts] opts)))))
 
 (defn split-next
   "void cui_split_next(cui_ctx * ui)"
@@ -541,12 +541,12 @@
 (defn make-id
   "cui_id cui_make_id(cui_ctx * ui, const char * str)"
   [ui str*]
-  (raw/cui_make_id ui (impl/str-arg str*)))
+  (raw/cui_make_id ui (impl/str-ptr str*)))
 
 (defn push-id
   "void cui_push_id(cui_ctx * ui, const char * str)"
   [ui str*]
-  (raw/cui_push_id ui (impl/str-arg str*)))
+  (raw/cui_push_id ui (impl/str-ptr str*)))
 
 (defn push-id-int
   "void cui_push_id_int(cui_ctx * ui, int value)"
@@ -597,145 +597,145 @@
   "void cui_text_ex(cui_ctx * ui, const char * text, const cui_text_opts * opts)"
   ([ui text*] (text ui text* nil))
   ([ui text* opts]
-   (impl/with-call [wb] (raw/cui_text_ex ui (impl/str-arg text*) (impl/in-ptr! wb [:struct :cui_text_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_text_ex ui (impl/str-ptr text*) (impl/in-ptr! wb [:struct :cui_text_opts] opts)))))
 
 (defn textf
   "void cui_textf(cui_ctx * ui, const char * fmt, ...)"
   [ui fmt & args]
-  (raw/cui_textf ui "%s" (apply format fmt args)))
+  (raw/cui_textf ui (impl/str-ptr "%s") (impl/str-ptr (apply format fmt args))))
 
 (defn heading
   "void cui_heading(cui_ctx * ui, const char * text, int level)"
   [ui text level]
-  (raw/cui_heading ui (impl/str-arg text) (impl/arg-val [:scalar :int] level)))
+  (raw/cui_heading ui (impl/str-ptr text) (impl/arg-val [:scalar :int] level)))
 
 (defn label
   "void cui_label(cui_ctx * ui, const char * text)"
   [ui text]
-  (raw/cui_label ui (impl/str-arg text)))
+  (raw/cui_label ui (impl/str-ptr text)))
 
 (defn secondary
   "void cui_secondary(cui_ctx * ui, const char * text)"
   [ui text]
-  (raw/cui_secondary ui (impl/str-arg text)))
+  (raw/cui_secondary ui (impl/str-ptr text)))
 
 (defn muted
   "void cui_muted(cui_ctx * ui, const char * text)"
   [ui text]
-  (raw/cui_muted ui (impl/str-arg text)))
+  (raw/cui_muted ui (impl/str-ptr text)))
 
 (defn code
   "void cui_code(cui_ctx * ui, const char * text)"
   [ui text]
-  (raw/cui_code ui (impl/str-arg text)))
+  (raw/cui_code ui (impl/str-ptr text)))
 
 (defn kbd
   "void cui_kbd(cui_ctx * ui, const char * keys)"
   [ui keys*]
-  (raw/cui_kbd ui (impl/str-arg keys*)))
+  (raw/cui_kbd ui (impl/str-ptr keys*)))
 
 (defn link
   "bool cui_link(cui_ctx * ui, const char * text)"
   [ui text]
-  (raw/cui_link ui (impl/str-arg text)))
+  (raw/cui_link ui (impl/str-ptr text)))
 
 (defn icon
   "void cui_icon(cui_ctx * ui, const char * icon, float size, cui_color color)"
   [ui icon* size color]
-  (impl/with-call [wb] (raw/cui_icon ui (impl/str-arg icon*) (impl/arg-val [:scalar :float] size) (impl/in-ptr! wb [:struct :cui_color] color))))
+  (impl/with-call [wb] (raw/cui_icon ui (impl/str-ptr icon*) (impl/arg-val [:scalar :float] size) (impl/in-ptr! wb [:struct :cui_color] color))))
 
 (defn button
   "bool cui_button_ex(cui_ctx * ui, const char * label, const cui_button_opts * opts)"
   ([ui label] (button ui label nil))
   ([ui label opts]
-   (impl/with-call [wb] (raw/cui_button_ex ui (impl/str-arg label) (impl/in-ptr! wb [:struct :cui_button_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_button_ex ui (impl/str-ptr label) (impl/in-ptr! wb [:struct :cui_button_opts] opts)))))
 
 (defn icon-button
   "bool cui_icon_button_ex(cui_ctx * ui, const char * icon, const cui_button_opts * opts)"
   ([ui icon] (icon-button ui icon nil))
   ([ui icon opts]
-   (impl/with-call [wb] (raw/cui_icon_button_ex ui (impl/str-arg icon) (impl/in-ptr! wb [:struct :cui_button_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_icon_button_ex ui (impl/str-ptr icon) (impl/in-ptr! wb [:struct :cui_button_opts] opts)))))
 
 (defn segmented
   "bool cui_segmented_ex(cui_ctx * ui, const char * id, const char * const * items, int count, int * index, const cui_segmented_opts * opts)"
   ([ui id items index] (segmented ui id items index nil))
   ([ui id items index opts]
-   (impl/with-call [wb] (raw/cui_segmented_ex ui (impl/str-arg id) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_segmented_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_segmented_ex ui (impl/str-ptr id) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_segmented_opts] opts)))))
 
 (defn checkbox
   "bool cui_checkbox_ex(cui_ctx * ui, const char * label, bool * value, const cui_check_opts * opts)"
   ([ui label value] (checkbox ui label value nil))
   ([ui label value opts]
-   (impl/with-call [wb] (raw/cui_checkbox_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:bool] value) (impl/in-ptr! wb [:struct :cui_check_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_checkbox_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:bool] value) (impl/in-ptr! wb [:struct :cui_check_opts] opts)))))
 
 (defn switch
   "bool cui_switch_ex(cui_ctx * ui, const char * label, bool * value, const cui_check_opts * opts)"
   ([ui label value] (switch ui label value nil))
   ([ui label value opts]
-   (impl/with-call [wb] (raw/cui_switch_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:bool] value) (impl/in-ptr! wb [:struct :cui_check_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_switch_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:bool] value) (impl/in-ptr! wb [:struct :cui_check_opts] opts)))))
 
 (defn radio
   "bool cui_radio_ex(cui_ctx * ui, const char * label, int * value, int option, const cui_check_opts * opts)"
   ([ui label value option] (radio ui label value option nil))
   ([ui label value option opts]
-   (impl/with-call [wb] (raw/cui_radio_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:scalar :int] value) (impl/arg-val [:scalar :int] option) (impl/in-ptr! wb [:struct :cui_check_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_radio_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:scalar :int] value) (impl/arg-val [:scalar :int] option) (impl/in-ptr! wb [:struct :cui_check_opts] opts)))))
 
 (defn radio-group
   "bool cui_radio_group(cui_ctx * ui, const char * id, const char * const * items, int count, int * index)"
   [ui id items index]
-  (impl/with-call [wb] (raw/cui_radio_group ui (impl/str-arg id) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index))))
+  (impl/with-call [wb] (raw/cui_radio_group ui (impl/str-ptr id) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index))))
 
 (defn slider
   "bool cui_slider_ex(cui_ctx * ui, const char * label, float * value, float min, float max, const cui_slider_opts * opts)"
   ([ui label value min* max*] (slider ui label value min* max* nil))
   ([ui label value min* max* opts]
-   (impl/with-call [wb] (raw/cui_slider_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:scalar :float] value) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_slider_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_slider_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:scalar :float] value) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_slider_opts] opts)))))
 
 (defn range-slider
   "bool cui_range_slider(cui_ctx * ui, const char * label, float * lo, float * hi, float min, float max)"
   [ui label lo hi min* max*]
-  (impl/with-call [wb] (raw/cui_range_slider ui (impl/str-arg label) (impl/ref-ptr! wb [:scalar :float] lo) (impl/ref-ptr! wb [:scalar :float] hi) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*))))
+  (impl/with-call [wb] (raw/cui_range_slider ui (impl/str-ptr label) (impl/ref-ptr! wb [:scalar :float] lo) (impl/ref-ptr! wb [:scalar :float] hi) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*))))
 
 (defn rating
   "bool cui_rating(cui_ctx * ui, const char * id, int * value, int max)"
   [ui id value max*]
-  (impl/with-call [wb] (raw/cui_rating ui (impl/str-arg id) (impl/ref-ptr! wb [:scalar :int] value) (impl/arg-val [:scalar :int] max*))))
+  (impl/with-call [wb] (raw/cui_rating ui (impl/str-ptr id) (impl/ref-ptr! wb [:scalar :int] value) (impl/arg-val [:scalar :int] max*))))
 
 (defn chip
   "bool cui_chip_ex(cui_ctx * ui, const char * label, bool * selected, const cui_chip_opts * opts)"
   ([ui label selected] (chip ui label selected nil))
   ([ui label selected opts]
-   (impl/with-call [wb] (raw/cui_chip_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:bool] selected) (impl/in-ptr! wb [:struct :cui_chip_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_chip_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:bool] selected) (impl/in-ptr! wb [:struct :cui_chip_opts] opts)))))
 
 (defn input
   "int cui_input_ex(cui_ctx * ui, const char * id, char * buf, size_t cap, const cui_input_opts * opts)"
   ([ui id buf] (input ui id buf nil))
   ([ui id buf opts]
-   (impl/with-call [wb] (raw/cui_input_ex ui (impl/str-arg id) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_input_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_input_ex ui (impl/str-ptr id) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_input_opts] opts)))))
 
 (defn textarea
   "int cui_textarea_ex(cui_ctx * ui, const char * id, char * buf, size_t cap, const cui_input_opts * opts)"
   ([ui id buf] (textarea ui id buf nil))
   ([ui id buf opts]
-   (impl/with-call [wb] (raw/cui_textarea_ex ui (impl/str-arg id) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_input_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_textarea_ex ui (impl/str-ptr id) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_input_opts] opts)))))
 
 (defn search
   "int cui_search_ex(cui_ctx * ui, const char * id, char * buf, size_t cap, const cui_input_opts * opts)"
   ([ui id buf] (search ui id buf nil))
   ([ui id buf opts]
-   (impl/with-call [wb] (raw/cui_search_ex ui (impl/str-arg id) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_input_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_search_ex ui (impl/str-ptr id) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_input_opts] opts)))))
 
 (defn number
   "bool cui_number_ex(cui_ctx * ui, const char * id, double * value, double min, double max, const cui_number_opts * opts)"
   ([ui id value min* max*] (number ui id value min* max* nil))
   ([ui id value min* max* opts]
-   (impl/with-call [wb] (raw/cui_number_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:scalar :double] value) (impl/arg-val [:scalar :double] min*) (impl/arg-val [:scalar :double] max*) (impl/in-ptr! wb [:struct :cui_number_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_number_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:scalar :double] value) (impl/arg-val [:scalar :double] min*) (impl/arg-val [:scalar :double] max*) (impl/in-ptr! wb [:struct :cui_number_opts] opts)))))
 
 (defn select
   "bool cui_select_ex(cui_ctx * ui, const char * id, const char * const * items, int count, int * index, const cui_select_opts * opts)"
   ([ui id items index] (select ui id items index nil))
   ([ui id items index opts]
-   (impl/with-call [wb] (raw/cui_select_ex ui (impl/str-arg id) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_select_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_select_ex ui (impl/str-ptr id) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_select_opts] opts)))))
 
 (defn date-today
   "cui_date cui_date_today()"
@@ -745,35 +745,35 @@
 (defn calendar
   "bool cui_calendar(cui_ctx * ui, const char * id, cui_date * value)"
   [ui id value]
-  (impl/with-call [wb] (raw/cui_calendar ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_date] value))))
+  (impl/with-call [wb] (raw/cui_calendar ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_date] value))))
 
 (defn date-picker
   "bool cui_date_picker_ex(cui_ctx * ui, const char * id, cui_date * value, const cui_date_opts * opts)"
   ([ui id value] (date-picker ui id value nil))
   ([ui id value opts]
-   (impl/with-call [wb] (raw/cui_date_picker_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_date] value) (impl/in-ptr! wb [:struct :cui_date_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_date_picker_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_date] value) (impl/in-ptr! wb [:struct :cui_date_opts] opts)))))
 
 (defn color-picker
   "bool cui_color_picker(cui_ctx * ui, const char * id, cui_color * value)"
   [ui id value]
-  (impl/with-call [wb] (raw/cui_color_picker ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_color] value))))
+  (impl/with-call [wb] (raw/cui_color_picker ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_color] value))))
 
 (defn tabs
   "bool cui_tabs_ex(cui_ctx * ui, const char * id, const char * const * items, int count, int * index, const cui_tabs_opts * opts)"
   ([ui id items index] (tabs ui id items index nil))
   ([ui id items index opts]
-   (impl/with-call [wb] (raw/cui_tabs_ex ui (impl/str-arg id) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_tabs_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_tabs_ex ui (impl/str-ptr id) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_tabs_opts] opts)))))
 
 (defn nav-item
   "bool cui_nav_item_ex(cui_ctx * ui, const char * label, const cui_nav_opts * opts)"
   ([ui label] (nav-item ui label nil))
   ([ui label opts]
-   (impl/with-call [wb] (raw/cui_nav_item_ex ui (impl/str-arg label) (impl/in-ptr! wb [:struct :cui_nav_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_nav_item_ex ui (impl/str-ptr label) (impl/in-ptr! wb [:struct :cui_nav_opts] opts)))))
 
 (defn nav-section
   "void cui_nav_section(cui_ctx * ui, const char * title)"
   [ui title]
-  (raw/cui_nav_section ui (impl/str-arg title)))
+  (raw/cui_nav_section ui (impl/str-ptr title)))
 
 (defn breadcrumb
   "int cui_breadcrumb(cui_ctx * ui, const char * const * items, int count)"
@@ -783,7 +783,7 @@
 (defn pagination
   "bool cui_pagination(cui_ctx * ui, const char * id, int * page, int page_count)"
   [ui id page page-count]
-  (impl/with-call [wb] (raw/cui_pagination ui (impl/str-arg id) (impl/ref-ptr! wb [:scalar :int] page) (impl/arg-val [:scalar :int] page-count))))
+  (impl/with-call [wb] (raw/cui_pagination ui (impl/str-ptr id) (impl/ref-ptr! wb [:scalar :int] page) (impl/arg-val [:scalar :int] page-count))))
 
 (defn stepper
   "void cui_stepper(cui_ctx * ui, const char * const * steps, int count, int current)"
@@ -794,7 +794,7 @@
   "bool cui_popover_begin(cui_ctx * ui, const char * id, const cui_popover_opts * opts)"
   ([ui id] (popover-begin ui id nil))
   ([ui id opts]
-   (impl/with-call [wb] (raw/cui_popover_begin ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_popover_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_popover_begin ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_popover_opts] opts)))))
 
 (defn popover-end
   "void cui_popover_end(cui_ctx * ui)"
@@ -805,33 +805,33 @@
   "int cui_tour_ex(cui_ctx * ui, const char * id, const cui_tour_step * steps, int count, int * step, const cui_tour_opts * opts)"
   ([ui id steps step] (tour ui id steps step nil))
   ([ui id steps step opts]
-   (impl/with-call [wb] (raw/cui_tour_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_tour_step] steps) (count steps) (impl/ref-ptr! wb [:scalar :int] step) (impl/in-ptr! wb [:struct :cui_tour_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_tour_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_tour_step] steps) (count steps) (impl/ref-ptr! wb [:scalar :int] step) (impl/in-ptr! wb [:struct :cui_tour_opts] opts)))))
 
 (defn popover-open
   "void cui_popover_open(cui_ctx * ui, const char * id)"
   [ui id]
-  (raw/cui_popover_open ui (impl/str-arg id)))
+  (raw/cui_popover_open ui (impl/str-ptr id)))
 
 (defn popover-close
   "void cui_popover_close(cui_ctx * ui, const char * id)"
   [ui id]
-  (raw/cui_popover_close ui (impl/str-arg id)))
+  (raw/cui_popover_close ui (impl/str-ptr id)))
 
 (defn popover-toggle
   "void cui_popover_toggle(cui_ctx * ui, const char * id)"
   [ui id]
-  (raw/cui_popover_toggle ui (impl/str-arg id)))
+  (raw/cui_popover_toggle ui (impl/str-ptr id)))
 
 (defn popover-is-open
   "bool cui_popover_is_open(cui_ctx * ui, const char * id)"
   [ui id]
-  (raw/cui_popover_is_open ui (impl/str-arg id)))
+  (raw/cui_popover_is_open ui (impl/str-ptr id)))
 
 (defn menu-begin
   "bool cui_menu_begin(cui_ctx * ui, const char * label, const cui_menu_opts * opts)"
   ([ui label] (menu-begin ui label nil))
   ([ui label opts]
-   (impl/with-call [wb] (raw/cui_menu_begin ui (impl/str-arg label) (impl/in-ptr! wb [:struct :cui_menu_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_menu_begin ui (impl/str-ptr label) (impl/in-ptr! wb [:struct :cui_menu_opts] opts)))))
 
 (defn menu-end
   "void cui_menu_end(cui_ctx * ui)"
@@ -841,7 +841,7 @@
 (defn context-menu-begin
   "bool cui_context_menu_begin(cui_ctx * ui, const char * id)"
   [ui id]
-  (raw/cui_context_menu_begin ui (impl/str-arg id)))
+  (raw/cui_context_menu_begin ui (impl/str-ptr id)))
 
 (defn context-menu-end
   "void cui_context_menu_end(cui_ctx * ui)"
@@ -852,7 +852,7 @@
   "bool cui_menu_item_ex(cui_ctx * ui, const char * label, const cui_menu_item_opts * opts)"
   ([ui label] (menu-item ui label nil))
   ([ui label opts]
-   (impl/with-call [wb] (raw/cui_menu_item_ex ui (impl/str-arg label) (impl/in-ptr! wb [:struct :cui_menu_item_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_menu_item_ex ui (impl/str-ptr label) (impl/in-ptr! wb [:struct :cui_menu_item_opts] opts)))))
 
 (defn menu-separator
   "void cui_menu_separator(cui_ctx * ui)"
@@ -862,18 +862,18 @@
 (defn menu-label
   "void cui_menu_label(cui_ctx * ui, const char * text)"
   [ui text]
-  (raw/cui_menu_label ui (impl/str-arg text)))
+  (raw/cui_menu_label ui (impl/str-ptr text)))
 
 (defn tooltip
   "void cui_tooltip(cui_ctx * ui, const char * text)"
   [ui text]
-  (raw/cui_tooltip ui (impl/str-arg text)))
+  (raw/cui_tooltip ui (impl/str-ptr text)))
 
 (defn dialog-begin
   "bool cui_dialog_begin(cui_ctx * ui, const char * title, bool * open, const cui_dialog_opts * opts)"
   ([ui title open] (dialog-begin ui title open nil))
   ([ui title open opts]
-   (impl/with-call [wb] (raw/cui_dialog_begin ui (impl/str-arg title) (impl/ref-ptr! wb [:bool] open) (impl/in-ptr! wb [:struct :cui_dialog_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_dialog_begin ui (impl/str-ptr title) (impl/ref-ptr! wb [:bool] open) (impl/in-ptr! wb [:struct :cui_dialog_opts] opts)))))
 
 (defn dialog-end
   "void cui_dialog_end(cui_ctx * ui)"
@@ -894,7 +894,7 @@
   "bool cui_sheet_begin(cui_ctx * ui, const char * title, bool * open, const cui_sheet_opts * opts)"
   ([ui title open] (sheet-begin ui title open nil))
   ([ui title open opts]
-   (impl/with-call [wb] (raw/cui_sheet_begin ui (impl/str-arg title) (impl/ref-ptr! wb [:bool] open) (impl/in-ptr! wb [:struct :cui_sheet_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_sheet_begin ui (impl/str-ptr title) (impl/ref-ptr! wb [:bool] open) (impl/in-ptr! wb [:struct :cui_sheet_opts] opts)))))
 
 (defn sheet-end
   "void cui_sheet_end(cui_ctx * ui)"
@@ -905,7 +905,7 @@
   "int cui_toast_ex(cui_ctx * ui, const char * title, const cui_toast_opts * opts)"
   ([ui title] (toast ui title nil))
   ([ui title opts]
-   (impl/with-call [wb] (raw/cui_toast_ex ui (impl/str-arg title) (impl/in-ptr! wb [:struct :cui_toast_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_toast_ex ui (impl/str-ptr title) (impl/in-ptr! wb [:struct :cui_toast_opts] opts)))))
 
 (defn toast-action-clicked
   "bool cui_toast_action_clicked(cui_ctx * ui, int handle)"
@@ -921,7 +921,7 @@
   "bool cui_alert_ex(cui_ctx * ui, const char * title, const cui_alert_opts * opts)"
   ([ui title] (alert ui title nil))
   ([ui title opts]
-   (impl/with-call [wb] (raw/cui_alert_ex ui (impl/str-arg title) (impl/in-ptr! wb [:struct :cui_alert_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_alert_ex ui (impl/str-ptr title) (impl/in-ptr! wb [:struct :cui_alert_opts] opts)))))
 
 (defn progress
   "void cui_progress_ex(cui_ctx * ui, float value, const cui_progress_opts * opts)"
@@ -960,13 +960,13 @@
   "void cui_badge_ex(cui_ctx * ui, const char * text, const cui_badge_opts * opts)"
   ([ui text] (badge ui text nil))
   ([ui text opts]
-   (impl/with-call [wb] (raw/cui_badge_ex ui (impl/str-arg text) (impl/in-ptr! wb [:struct :cui_badge_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_badge_ex ui (impl/str-ptr text) (impl/in-ptr! wb [:struct :cui_badge_opts] opts)))))
 
 (defn avatar
   "void cui_avatar_ex(cui_ctx * ui, const char * name, const cui_avatar_opts * opts)"
   ([ui name*] (avatar ui name* nil))
   ([ui name* opts]
-   (impl/with-call [wb] (raw/cui_avatar_ex ui (impl/str-arg name*) (impl/in-ptr! wb [:struct :cui_avatar_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_avatar_ex ui (impl/str-ptr name*) (impl/in-ptr! wb [:struct :cui_avatar_opts] opts)))))
 
 (defn avatar-group
   "void cui_avatar_group(cui_ctx * ui, const char * const * names, int count, int max_visible, float size)"
@@ -977,23 +977,23 @@
   "bool cui_empty_state_ex(cui_ctx * ui, const char * title, const cui_empty_opts * opts)"
   ([ui title] (empty-state ui title nil))
   ([ui title opts]
-   (impl/with-call [wb] (raw/cui_empty_state_ex ui (impl/str-arg title) (impl/in-ptr! wb [:struct :cui_empty_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_empty_state_ex ui (impl/str-ptr title) (impl/in-ptr! wb [:struct :cui_empty_opts] opts)))))
 
 (defn metric
   "void cui_metric_ex(cui_ctx * ui, const char * label, const char * value, const cui_metric_opts * opts)"
   ([ui label value] (metric ui label value nil))
   ([ui label value opts]
-   (impl/with-call [wb] (raw/cui_metric_ex ui (impl/str-arg label) (impl/str-arg value) (impl/in-ptr! wb [:struct :cui_metric_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_metric_ex ui (impl/str-ptr label) (impl/str-ptr value) (impl/in-ptr! wb [:struct :cui_metric_opts] opts)))))
 
 (defn meter
   "void cui_meter(cui_ctx * ui, const char * label, float used, float total, const char * unit)"
   [ui label used total unit]
-  (raw/cui_meter ui (impl/str-arg label) (impl/arg-val [:scalar :float] used) (impl/arg-val [:scalar :float] total) (impl/str-arg unit)))
+  (raw/cui_meter ui (impl/str-ptr label) (impl/arg-val [:scalar :float] used) (impl/arg-val [:scalar :float] total) (impl/str-ptr unit)))
 
 (defn accordion-begin
   "bool cui_accordion_begin(cui_ctx * ui, const char * title, bool * open)"
   [ui title open]
-  (impl/with-call [wb] (raw/cui_accordion_begin ui (impl/str-arg title) (impl/ref-ptr! wb [:bool] open))))
+  (impl/with-call [wb] (raw/cui_accordion_begin ui (impl/str-ptr title) (impl/ref-ptr! wb [:bool] open))))
 
 (defn accordion-end
   "void cui_accordion_end(cui_ctx * ui)"
@@ -1004,7 +1004,7 @@
   "bool cui_tree_begin(cui_ctx * ui, const char * label, bool * open, const cui_tree_opts * opts)"
   ([ui label open] (tree-begin ui label open nil))
   ([ui label open opts]
-   (impl/with-call [wb] (raw/cui_tree_begin ui (impl/str-arg label) (impl/ref-ptr! wb [:bool] open) (impl/in-ptr! wb [:struct :cui_tree_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_tree_begin ui (impl/str-ptr label) (impl/ref-ptr! wb [:bool] open) (impl/in-ptr! wb [:struct :cui_tree_opts] opts)))))
 
 (defn tree-end
   "void cui_tree_end(cui_ctx * ui)"
@@ -1020,12 +1020,12 @@
   "bool cui_list_item_ex(cui_ctx * ui, const char * title, const cui_list_item_opts * opts)"
   ([ui title] (list-item ui title nil))
   ([ui title opts]
-   (impl/with-call [wb] (raw/cui_list_item_ex ui (impl/str-arg title) (impl/in-ptr! wb [:struct :cui_list_item_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_list_item_ex ui (impl/str-ptr title) (impl/in-ptr! wb [:struct :cui_list_item_opts] opts)))))
 
 (defn virtual-list-begin
   "void cui_virtual_list_begin(cui_ctx * ui, const char * id, int count, float row_height, cui_size height, int * first, int * last)"
   [ui id count* row-height height first* last*]
-  (impl/with-call [wb] (raw/cui_virtual_list_begin ui (impl/str-arg id) (impl/arg-val [:scalar :int] count*) (impl/arg-val [:scalar :float] row-height) (impl/in-ptr! wb [:struct :cui_size] height) (impl/ref-ptr! wb [:scalar :int] first*) (impl/ref-ptr! wb [:scalar :int] last*))))
+  (impl/with-call [wb] (raw/cui_virtual_list_begin ui (impl/str-ptr id) (impl/arg-val [:scalar :int] count*) (impl/arg-val [:scalar :float] row-height) (impl/in-ptr! wb [:struct :cui_size] height) (impl/ref-ptr! wb [:scalar :int] first*) (impl/ref-ptr! wb [:scalar :int] last*))))
 
 (defn virtual-list-end
   "void cui_virtual_list_end(cui_ctx * ui)"
@@ -1036,7 +1036,7 @@
   "bool cui_table_begin_ex(cui_ctx * ui, const char * id, const cui_table_column * columns, int column_count, const cui_table_opts * opts)"
   ([ui id columns] (table-begin ui id columns nil))
   ([ui id columns opts]
-   (impl/with-call [wb] (raw/cui_table_begin_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_table_column] columns) (count columns) (impl/in-ptr! wb [:struct :cui_table_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_table_begin_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_table_column] columns) (count columns) (impl/in-ptr! wb [:struct :cui_table_opts] opts)))))
 
 (defn table-row
   "bool cui_table_row(cui_ctx * ui, bool selected)"
@@ -1051,12 +1051,12 @@
 (defn table-cell-text
   "void cui_table_cell_text(cui_ctx * ui, const char * text)"
   [ui text]
-  (raw/cui_table_cell_text ui (impl/str-arg text)))
+  (raw/cui_table_cell_text ui (impl/str-ptr text)))
 
 (defn table-cell-textf
   "void cui_table_cell_textf(cui_ctx * ui, const char * fmt, ...)"
   [ui fmt & args]
-  (raw/cui_table_cell_textf ui "%s" (apply format fmt args)))
+  (raw/cui_table_cell_textf ui (impl/str-ptr "%s") (impl/str-ptr (apply format fmt args))))
 
 (defn table-end
   "void cui_table_end(cui_ctx * ui)"
@@ -1067,19 +1067,19 @@
   "void cui_line_chart_ex(cui_ctx * ui, const char * id, const cui_series * series, int count, const cui_chart_opts * opts)"
   ([ui id series] (line-chart ui id series nil))
   ([ui id series opts]
-   (impl/with-call [wb] (raw/cui_line_chart_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_series] series) (count series) (impl/in-ptr! wb [:struct :cui_chart_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_line_chart_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_series] series) (count series) (impl/in-ptr! wb [:struct :cui_chart_opts] opts)))))
 
 (defn bar-chart
   "void cui_bar_chart_ex(cui_ctx * ui, const char * id, const cui_series * series, int count, const cui_chart_opts * opts)"
   ([ui id series] (bar-chart ui id series nil))
   ([ui id series opts]
-   (impl/with-call [wb] (raw/cui_bar_chart_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_series] series) (count series) (impl/in-ptr! wb [:struct :cui_chart_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_bar_chart_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_series] series) (count series) (impl/in-ptr! wb [:struct :cui_chart_opts] opts)))))
 
 (defn donut-chart
   "void cui_donut_chart_ex(cui_ctx * ui, const char * id, const float * values, const char * const * labels, int count, const cui_chart_opts * opts)"
   ([ui id values labels] (donut-chart ui id values labels nil))
   ([ui id values labels opts]
-   (impl/with-call [wb] (raw/cui_donut_chart_ex ui (impl/str-arg id) (impl/in-ptr! wb [:scalar :float] values) (impl/strs-ptr labels) (count labels) (impl/in-ptr! wb [:struct :cui_chart_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_donut_chart_ex ui (impl/str-ptr id) (impl/in-ptr! wb [:scalar :float] values) (impl/strs-ptr labels) (count labels) (impl/in-ptr! wb [:struct :cui_chart_opts] opts)))))
 
 (defn sparkline
   "void cui_sparkline(cui_ctx * ui, const float * values, int count, cui_size width, float height, cui_color color)"
@@ -1089,13 +1089,13 @@
 (defn gauge
   "void cui_gauge(cui_ctx * ui, const char * label, float value, float size)"
   [ui label value size]
-  (raw/cui_gauge ui (impl/str-arg label) (impl/arg-val [:scalar :float] value) (impl/arg-val [:scalar :float] size)))
+  (raw/cui_gauge ui (impl/str-ptr label) (impl/arg-val [:scalar :float] value) (impl/arg-val [:scalar :float] size)))
 
 (defn pattern-meter
   "int cui_pattern_meter_ex(cui_ctx * ui, const char * id, const cui_meter_part * parts, int count, const cui_pattern_meter_opts * opts)"
   ([ui id parts] (pattern-meter ui id parts nil))
   ([ui id parts opts]
-   (impl/with-call [wb] (raw/cui_pattern_meter_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_meter_part] parts) (count parts) (impl/in-ptr! wb [:struct :cui_pattern_meter_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_pattern_meter_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_meter_part] parts) (count parts) (impl/in-ptr! wb [:struct :cui_pattern_meter_opts] opts)))))
 
 (defn image-create
   "cui_texture cui_image_create(cui_ctx * ui, int w, int h, const void * rgba)"
@@ -1105,7 +1105,7 @@
 (defn image-load
   "cui_texture cui_image_load(cui_ctx * ui, const char * path, int * w, int * h)"
   [ui path w h]
-  (impl/with-call [wb] (raw/cui_image_load ui (impl/str-arg path) (impl/ref-ptr! wb [:scalar :int] w) (impl/ref-ptr! wb [:scalar :int] h))))
+  (impl/with-call [wb] (raw/cui_image_load ui (impl/str-ptr path) (impl/ref-ptr! wb [:scalar :int] w) (impl/ref-ptr! wb [:scalar :int] h))))
 
 (defn image-destroy
   "void cui_image_destroy(cui_ctx * ui, cui_texture tex)"
@@ -1122,13 +1122,13 @@
   "bool cui_image_viewer_ex(cui_ctx * ui, const char * id, cui_texture tex, int image_w, int image_h, cui_image_view * view, const cui_image_viewer_opts * opts)"
   ([ui id tex image-w image-h view] (image-viewer ui id tex image-w image-h view nil))
   ([ui id tex image-w image-h view opts]
-   (impl/with-call [wb] (raw/cui_image_viewer_ex ui (impl/str-arg id) (impl/arg-val [:scalar :uptr] tex) (impl/arg-val [:scalar :int] image-w) (impl/arg-val [:scalar :int] image-h) (impl/ref-ptr! wb [:struct :cui_image_view] view) (impl/in-ptr! wb [:struct :cui_image_viewer_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_image_viewer_ex ui (impl/str-ptr id) (impl/arg-val [:scalar :uptr] tex) (impl/arg-val [:scalar :int] image-w) (impl/arg-val [:scalar :int] image-h) (impl/ref-ptr! wb [:struct :cui_image_view] view) (impl/in-ptr! wb [:struct :cui_image_viewer_opts] opts)))))
 
 (defn cropper
   "bool cui_cropper_ex(cui_ctx * ui, const char * id, cui_texture tex, int image_w, int image_h, cui_rect * crop, const cui_cropper_opts * opts)"
   ([ui id tex image-w image-h crop] (cropper ui id tex image-w image-h crop nil))
   ([ui id tex image-w image-h crop opts]
-   (impl/with-call [wb] (raw/cui_cropper_ex ui (impl/str-arg id) (impl/arg-val [:scalar :uptr] tex) (impl/arg-val [:scalar :int] image-w) (impl/arg-val [:scalar :int] image-h) (impl/ref-ptr! wb [:struct :cui_rect] crop) (impl/in-ptr! wb [:struct :cui_cropper_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_cropper_ex ui (impl/str-ptr id) (impl/arg-val [:scalar :uptr] tex) (impl/arg-val [:scalar :int] image-w) (impl/arg-val [:scalar :int] image-h) (impl/ref-ptr! wb [:struct :cui_rect] crop) (impl/in-ptr! wb [:struct :cui_cropper_opts] opts)))))
 
 (defn command-palette
   "int cui_command_palette(cui_ctx * ui, bool * open, const cui_command * commands, int count)"
@@ -1139,18 +1139,18 @@
   "bool cui_radio_cards_ex(cui_ctx * ui, const char * id, const cui_choice * choices, int count, int * index, const cui_radio_cards_opts * opts)"
   ([ui id choices index] (radio-cards ui id choices index nil))
   ([ui id choices index opts]
-   (impl/with-call [wb] (raw/cui_radio_cards_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_choice] choices) (count choices) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_radio_cards_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_radio_cards_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_choice] choices) (count choices) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_radio_cards_opts] opts)))))
 
 (defn tag-input
   "bool cui_tag_input_ex(cui_ctx * ui, const char * id, char * buf, size_t cap, const cui_tag_opts * opts)"
   ([ui id buf] (tag-input ui id buf nil))
   ([ui id buf opts]
-   (impl/with-call [wb] (raw/cui_tag_input_ex ui (impl/str-arg id) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_tag_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_tag_input_ex ui (impl/str-ptr id) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_tag_opts] opts)))))
 
 (defn otp-input
   "bool cui_otp_input(cui_ctx * ui, const char * id, char * code, int length)"
   [ui id code]
-  (impl/with-call [wb] (raw/cui_otp_input ui (impl/str-arg id) (impl/buf-ptr! wb code) (impl/buf-cap code))))
+  (impl/with-call [wb] (raw/cui_otp_input ui (impl/str-ptr id) (impl/buf-ptr! wb code) (impl/buf-cap code))))
 
 (defn button-group-begin
   "void cui_button_group_begin(cui_ctx * ui)"
@@ -1165,29 +1165,29 @@
 (defn copy-button
   "bool cui_copy_button(cui_ctx * ui, const char * id, const char * text)"
   [ui id text]
-  (raw/cui_copy_button ui (impl/str-arg id) (impl/str-arg text)))
+  (raw/cui_copy_button ui (impl/str-ptr id) (impl/str-ptr text)))
 
 (defn hold-button
   "bool cui_hold_button_ex(cui_ctx * ui, const char * label, const cui_hold_opts * opts)"
   ([ui label] (hold-button ui label nil))
   ([ui label opts]
-   (impl/with-call [wb] (raw/cui_hold_button_ex ui (impl/str-arg label) (impl/in-ptr! wb [:struct :cui_hold_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_hold_button_ex ui (impl/str-ptr label) (impl/in-ptr! wb [:struct :cui_hold_opts] opts)))))
 
 (defn password-strength
   "int cui_password_strength(cui_ctx * ui, const char * password)"
   [ui password]
-  (raw/cui_password_strength ui (impl/str-arg password)))
+  (raw/cui_password_strength ui (impl/str-ptr password)))
 
 (defn timeline-item
   "void cui_timeline_item_ex(cui_ctx * ui, const char * title, const cui_timeline_opts * opts)"
   ([ui title] (timeline-item ui title nil))
   ([ui title opts]
-   (impl/with-call [wb] (raw/cui_timeline_item_ex ui (impl/str-arg title) (impl/in-ptr! wb [:struct :cui_timeline_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_timeline_item_ex ui (impl/str-ptr title) (impl/in-ptr! wb [:struct :cui_timeline_opts] opts)))))
 
 (defn reorder-begin
   "void cui_reorder_begin(cui_ctx * ui, const char * id, int * order, int count)"
   [ui id order]
-  (impl/with-call [wb] (raw/cui_reorder_begin ui (impl/str-arg id) (impl/ref-ptr! wb [:scalar :int] order) (impl/ref-count order))))
+  (impl/with-call [wb] (raw/cui_reorder_begin ui (impl/str-ptr id) (impl/ref-ptr! wb [:scalar :int] order) (impl/ref-count order))))
 
 (defn reorder-end
   "bool cui_reorder_end(cui_ctx * ui)"
@@ -1207,48 +1207,48 @@
 (defn progress-ring
   "void cui_progress_ring(cui_ctx * ui, const char * label, float value, float size)"
   [ui label value size]
-  (raw/cui_progress_ring ui (impl/str-arg label) (impl/arg-val [:scalar :float] value) (impl/arg-val [:scalar :float] size)))
+  (raw/cui_progress_ring ui (impl/str-ptr label) (impl/arg-val [:scalar :float] value) (impl/arg-val [:scalar :float] size)))
 
 (defn split-button
   "int cui_split_button_ex(cui_ctx * ui, const char * label, const char * const * items, int count, const cui_split_button_opts * opts)"
   ([ui label items] (split-button ui label items nil))
   ([ui label items opts]
-   (impl/with-call [wb] (raw/cui_split_button_ex ui (impl/str-arg label) (impl/strs-ptr items) (count items) (impl/in-ptr! wb [:struct :cui_split_button_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_split_button_ex ui (impl/str-ptr label) (impl/strs-ptr items) (count items) (impl/in-ptr! wb [:struct :cui_split_button_opts] opts)))))
 
 (defn toggle-group
   "bool cui_toggle_group_ex(cui_ctx * ui, const char * id, const char * const * labels, int count, bool * values, const cui_toggle_group_opts * opts)"
   ([ui id labels values] (toggle-group ui id labels values nil))
   ([ui id labels values opts]
-   (impl/with-call [wb] (raw/cui_toggle_group_ex ui (impl/str-arg id) (impl/strs-ptr labels) (count labels) (impl/ref-ptr! wb [:bool] values) (impl/in-ptr! wb [:struct :cui_toggle_group_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_toggle_group_ex ui (impl/str-ptr id) (impl/strs-ptr labels) (count labels) (impl/ref-ptr! wb [:bool] values) (impl/in-ptr! wb [:struct :cui_toggle_group_opts] opts)))))
 
 (defn confirm-button
   "bool cui_confirm_button_ex(cui_ctx * ui, const char * label, const cui_confirm_opts * opts)"
   ([ui label] (confirm-button ui label nil))
   ([ui label opts]
-   (impl/with-call [wb] (raw/cui_confirm_button_ex ui (impl/str-arg label) (impl/in-ptr! wb [:struct :cui_confirm_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_confirm_button_ex ui (impl/str-ptr label) (impl/in-ptr! wb [:struct :cui_confirm_opts] opts)))))
 
 (defn status-button
   "bool cui_status_button_ex(cui_ctx * ui, const char * label, cui_status status, const cui_status_button_opts * opts)"
   ([ui label status] (status-button ui label status nil))
   ([ui label status opts]
-   (impl/with-call [wb] (raw/cui_status_button_ex ui (impl/str-arg label) (impl/arg-val [:enum :cui_status] status) (impl/in-ptr! wb [:struct :cui_status_button_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_status_button_ex ui (impl/str-ptr label) (impl/arg-val [:enum :cui_status] status) (impl/in-ptr! wb [:struct :cui_status_button_opts] opts)))))
 
 (defn status-spinner
   "bool cui_status_spinner_ex(cui_ctx * ui, const char * id, cui_status status, const cui_status_spinner_opts * opts)"
   ([ui id status] (status-spinner ui id status nil))
   ([ui id status opts]
-   (impl/with-call [wb] (raw/cui_status_spinner_ex ui (impl/str-arg id) (impl/arg-val [:enum :cui_status] status) (impl/in-ptr! wb [:struct :cui_status_spinner_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_status_spinner_ex ui (impl/str-ptr id) (impl/arg-val [:enum :cui_status] status) (impl/in-ptr! wb [:struct :cui_status_spinner_opts] opts)))))
 
 (defn reactions
   "int cui_reactions(cui_ctx * ui, const char * id, cui_reaction * items, int count)"
   [ui id items]
-  (impl/with-call [wb] (raw/cui_reactions ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_reaction] items) (impl/ref-count items))))
+  (impl/with-call [wb] (raw/cui_reactions ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_reaction] items) (impl/ref-count items))))
 
 (defn speed-dial
   "int cui_speed_dial_ex(cui_ctx * ui, const char * id, const cui_speed_action * actions, int count, const cui_speed_dial_opts * opts)"
   ([ui id actions] (speed-dial ui id actions nil))
   ([ui id actions opts]
-   (impl/with-call [wb] (raw/cui_speed_dial_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_speed_action] actions) (count actions) (impl/in-ptr! wb [:struct :cui_speed_dial_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_speed_dial_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_speed_action] actions) (count actions) (impl/in-ptr! wb [:struct :cui_speed_dial_opts] opts)))))
 
 (defn theme-switcher
   "bool cui_theme_switcher(cui_ctx * ui, int * mode, bool with_system)"
@@ -1264,7 +1264,7 @@
   "bool cui_user_menu_begin(cui_ctx * ui, const char * name, const cui_user_menu_opts * opts)"
   ([ui name*] (user-menu-begin ui name* nil))
   ([ui name* opts]
-   (impl/with-call [wb] (raw/cui_user_menu_begin ui (impl/str-arg name*) (impl/in-ptr! wb [:struct :cui_user_menu_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_user_menu_begin ui (impl/str-ptr name*) (impl/in-ptr! wb [:struct :cui_user_menu_opts] opts)))))
 
 (defn user-menu-end
   "void cui_user_menu_end(cui_ctx * ui)"
@@ -1274,7 +1274,7 @@
 (defn swipe-item-begin
   "void cui_swipe_item_begin(cui_ctx * ui, const char * id, const cui_swipe_action * left, int left_count, const cui_swipe_action * right, int right_count)"
   [ui id left right]
-  (impl/with-call [wb] (raw/cui_swipe_item_begin ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_swipe_action] left) (count left) (impl/vec-ptr! wb [:struct :cui_swipe_action] right) (count right))))
+  (impl/with-call [wb] (raw/cui_swipe_item_begin ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_swipe_action] left) (count left) (impl/vec-ptr! wb [:struct :cui_swipe_action] right) (count right))))
 
 (defn swipe-item-end
   "int cui_swipe_item_end(cui_ctx * ui)"
@@ -1285,7 +1285,7 @@
   "bool cui_data_grid_begin_ex(cui_ctx * ui, const char * id, const cui_grid_column * columns, int column_count, int row_count, int * first, int * last, const cui_grid_opts * opts)"
   ([ui id columns row-count first* last*] (data-grid-begin ui id columns row-count first* last* nil))
   ([ui id columns row-count first* last* opts]
-   (impl/with-call [wb] (raw/cui_data_grid_begin_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_grid_column] columns) (count columns) (impl/arg-val [:scalar :int] row-count) (impl/ref-ptr! wb [:scalar :int] first*) (impl/ref-ptr! wb [:scalar :int] last*) (impl/in-ptr! wb [:struct :cui_grid_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_data_grid_begin_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_grid_column] columns) (count columns) (impl/arg-val [:scalar :int] row-count) (impl/ref-ptr! wb [:scalar :int] first*) (impl/ref-ptr! wb [:scalar :int] last*) (impl/in-ptr! wb [:struct :cui_grid_opts] opts)))))
 
 (defn data-grid-row
   "bool cui_data_grid_row(cui_ctx * ui, int row)"
@@ -1300,7 +1300,7 @@
 (defn data-grid-cell-text
   "void cui_data_grid_cell_text(cui_ctx * ui, const char * text)"
   [ui text]
-  (raw/cui_data_grid_cell_text ui (impl/str-arg text)))
+  (raw/cui_data_grid_cell_text ui (impl/str-ptr text)))
 
 (defn data-grid-cell-edit
   "bool cui_data_grid_cell_edit(cui_ctx * ui, char * buf, size_t cap)"
@@ -1320,18 +1320,18 @@
 (defn tree-cell
   "bool cui_tree_cell(cui_ctx * ui, const char * label, int depth, bool has_children, bool * open, const char * icon)"
   [ui label depth has-children open icon]
-  (impl/with-call [wb] (raw/cui_tree_cell ui (impl/str-arg label) (impl/arg-val [:scalar :int] depth) (impl/arg-val [:bool] has-children) (impl/ref-ptr! wb [:bool] open) (impl/str-arg icon))))
+  (impl/with-call [wb] (raw/cui_tree_cell ui (impl/str-ptr label) (impl/arg-val [:scalar :int] depth) (impl/arg-val [:bool] has-children) (impl/ref-ptr! wb [:bool] open) (impl/str-ptr icon))))
 
 (defn filter-bar
   "bool cui_filter_bar(cui_ctx * ui, const char * id, const cui_filter_field * fields, int count, uint32_t * selected, char * search, size_t search_cap)"
   [ui id fields selected search]
-  (impl/with-call [wb] (raw/cui_filter_bar ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_filter_field] fields) (count fields) (impl/ref-ptr! wb [:scalar :uint32] selected) (impl/buf-ptr! wb search) (impl/buf-cap search))))
+  (impl/with-call [wb] (raw/cui_filter_bar ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_filter_field] fields) (count fields) (impl/ref-ptr! wb [:scalar :uint32] selected) (impl/buf-ptr! wb search) (impl/buf-cap search))))
 
 (defn tree-table-begin
   "void cui_tree_table_begin_ex(cui_ctx * ui, const char * id, const cui_grid_column * columns, int column_count, cui_tree_node * nodes, int node_count, const cui_tree_table_opts * opts)"
   ([ui id columns nodes] (tree-table-begin ui id columns nodes nil))
   ([ui id columns nodes opts]
-   (impl/with-call [wb] (raw/cui_tree_table_begin_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_grid_column] columns) (count columns) (impl/ref-ptr! wb [:struct :cui_tree_node] nodes) (impl/ref-count nodes) (impl/in-ptr! wb [:struct :cui_tree_table_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_tree_table_begin_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_grid_column] columns) (count columns) (impl/ref-ptr! wb [:struct :cui_tree_node] nodes) (impl/ref-count nodes) (impl/in-ptr! wb [:struct :cui_tree_table_opts] opts)))))
 
 (defn tree-table-row
   "int cui_tree_table_row(cui_ctx * ui)"
@@ -1341,7 +1341,7 @@
 (defn tree-table-name
   "void cui_tree_table_name(cui_ctx * ui, const char * label, const char * icon)"
   [ui label icon]
-  (raw/cui_tree_table_name ui (impl/str-arg label) (impl/str-arg icon)))
+  (raw/cui_tree_table_name ui (impl/str-ptr label) (impl/str-ptr icon)))
 
 (defn tree-table-depth
   "int cui_tree_table_depth(cui_ctx * ui)"
@@ -1362,12 +1362,12 @@
   "cui_path_bar_result cui_path_bar_ex(cui_ctx * ui, const char * id, const char * const * segments, int count, const cui_path_bar_opts * opts)"
   ([ui id segments] (path-bar ui id segments nil))
   ([ui id segments opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_path_bar_result)] (raw/cui_path_bar_ex dst ui (impl/str-arg id) (impl/strs-ptr segments) (count segments) (impl/in-ptr! wb [:struct :cui_path_bar_opts] opts)) (impl/read-struct :cui_path_bar_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_path_bar_result)] (raw/cui_path_bar_ex dst ui (impl/str-ptr id) (impl/strs-ptr segments) (count segments) (impl/in-ptr! wb [:struct :cui_path_bar_opts] opts)) (impl/read-struct :cui_path_bar_result dst)))))
 
 (defn path-bar-menu-begin
   "bool cui_path_bar_menu_begin(cui_ctx * ui, const char * id, int * segment)"
   [ui id segment]
-  (impl/with-call [wb] (raw/cui_path_bar_menu_begin ui (impl/str-arg id) (impl/ref-ptr! wb [:scalar :int] segment))))
+  (impl/with-call [wb] (raw/cui_path_bar_menu_begin ui (impl/str-ptr id) (impl/ref-ptr! wb [:scalar :int] segment))))
 
 (defn path-bar-menu-end
   "void cui_path_bar_menu_end(cui_ctx * ui)"
@@ -1377,37 +1377,37 @@
 (defn fs-list
   "int cui_fs_list(void * user, const char * path, cui_file_entry * out, int cap, char * names, size_t names_cap, bool hidden)"
   [user path out names hidden]
-  (impl/with-call [wb] (raw/cui_fs_list user (impl/str-arg path) (impl/ref-ptr! wb [:struct :cui_file_entry] out) (impl/ref-count out) (impl/buf-ptr! wb names) (impl/buf-cap names) (impl/arg-val [:bool] hidden))))
+  (impl/with-call [wb] (raw/cui_fs_list user (impl/str-ptr path) (impl/ref-ptr! wb [:struct :cui_file_entry] out) (impl/ref-count out) (impl/buf-ptr! wb names) (impl/buf-cap names) (impl/arg-val [:bool] hidden))))
 
 (defn file-browser
   "cui_file_browser_result cui_file_browser_ex(cui_ctx * ui, const char * id, char * path, size_t path_cap, const cui_file_browser_opts * opts)"
   ([ui id path] (file-browser ui id path nil))
   ([ui id path opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_file_browser_result)] (raw/cui_file_browser_ex dst ui (impl/str-arg id) (impl/buf-ptr! wb path) (impl/buf-cap path) (impl/in-ptr! wb [:struct :cui_file_browser_opts] opts)) (impl/read-struct :cui_file_browser_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_file_browser_result)] (raw/cui_file_browser_ex dst ui (impl/str-ptr id) (impl/buf-ptr! wb path) (impl/buf-cap path) (impl/in-ptr! wb [:struct :cui_file_browser_opts] opts)) (impl/read-struct :cui_file_browser_result dst)))))
 
 (defn file-picker
   "bool cui_file_picker_ex(cui_ctx * ui, const char * id, bool * open, char * out, size_t out_cap, const cui_file_picker_opts * opts)"
   ([ui id open out] (file-picker ui id open out nil))
   ([ui id open out opts]
-   (impl/with-call [wb] (raw/cui_file_picker_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:bool] open) (impl/buf-ptr! wb out) (impl/buf-cap out) (impl/in-ptr! wb [:struct :cui_file_picker_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_file_picker_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:bool] open) (impl/buf-ptr! wb out) (impl/buf-cap out) (impl/in-ptr! wb [:struct :cui_file_picker_opts] opts)))))
 
 (defn code-block
   "void cui_code_block_ex(cui_ctx * ui, const char * id, const char * code, const cui_code_opts * opts)"
   ([ui id code] (code-block ui id code nil))
   ([ui id code opts]
-   (impl/with-call [wb] (raw/cui_code_block_ex ui (impl/str-arg id) (impl/str-arg code) (impl/in-ptr! wb [:struct :cui_code_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_code_block_ex ui (impl/str-ptr id) (impl/str-ptr code) (impl/in-ptr! wb [:struct :cui_code_opts] opts)))))
 
 (defn json-view
   "bool cui_json_view_ex(cui_ctx * ui, const char * id, const char * json, const cui_json_opts * opts)"
   ([ui id json] (json-view ui id json nil))
   ([ui id json opts]
-   (impl/with-call [wb] (raw/cui_json_view_ex ui (impl/str-arg id) (impl/str-arg json) (impl/in-ptr! wb [:struct :cui_json_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_json_view_ex ui (impl/str-ptr id) (impl/str-ptr json) (impl/in-ptr! wb [:struct :cui_json_opts] opts)))))
 
 (defn markdown
   "cui_markdown_result cui_markdown_ex(cui_ctx * ui, const char * id, const char * text, const cui_markdown_opts * opts)"
   ([ui id text] (markdown ui id text nil))
   ([ui id text opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_markdown_result)] (raw/cui_markdown_ex dst ui (impl/str-arg id) (impl/str-arg text) (impl/in-ptr! wb [:struct :cui_markdown_opts] opts)) (impl/read-struct :cui_markdown_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_markdown_result)] (raw/cui_markdown_ex dst ui (impl/str-ptr id) (impl/str-ptr text) (impl/in-ptr! wb [:struct :cui_markdown_opts] opts)) (impl/read-struct :cui_markdown_result dst)))))
 
 (defn markdown-apply-task
   "bool cui_markdown_apply_task(char * text, const cui_markdown_result * result)"
@@ -1418,76 +1418,76 @@
   "cui_code_editor_result cui_code_editor_ex(cui_ctx * ui, const char * id, char * buf, size_t cap, const cui_code_editor_opts * opts)"
   ([ui id buf] (code-editor ui id buf nil))
   ([ui id buf opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_code_editor_result)] (raw/cui_code_editor_ex dst ui (impl/str-arg id) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_code_editor_opts] opts)) (impl/read-struct :cui_code_editor_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_code_editor_result)] (raw/cui_code_editor_ex dst ui (impl/str-ptr id) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_code_editor_opts] opts)) (impl/read-struct :cui_code_editor_result dst)))))
 
 (defn code-editor-goto
   "void cui_code_editor_goto(cui_ctx * ui, const char * id, int line, int column)"
   [ui id line column]
-  (raw/cui_code_editor_goto ui (impl/str-arg id) (impl/arg-val [:scalar :int] line) (impl/arg-val [:scalar :int] column)))
+  (raw/cui_code_editor_goto ui (impl/str-ptr id) (impl/arg-val [:scalar :int] line) (impl/arg-val [:scalar :int] column)))
 
 (defn code-editor-select
   "void cui_code_editor_select(cui_ctx * ui, const char * id, int anchor, int cursor)"
   [ui id anchor cursor]
-  (raw/cui_code_editor_select ui (impl/str-arg id) (impl/arg-val [:scalar :int] anchor) (impl/arg-val [:scalar :int] cursor)))
+  (raw/cui_code_editor_select ui (impl/str-ptr id) (impl/arg-val [:scalar :int] anchor) (impl/arg-val [:scalar :int] cursor)))
 
 (defn code-editor-find
   "void cui_code_editor_find(cui_ctx * ui, const char * id, const char * query)"
   [ui id query]
-  (raw/cui_code_editor_find ui (impl/str-arg id) (impl/str-arg query)))
+  (raw/cui_code_editor_find ui (impl/str-ptr id) (impl/str-ptr query)))
 
 (defn diff-view
   "cui_diff_result cui_diff_view_ex(cui_ctx * ui, const char * id, const char * old_text, const char * new_text, const cui_diff_opts * opts)"
   ([ui id old-text new-text] (diff-view ui id old-text new-text nil))
   ([ui id old-text new-text opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_diff_result)] (raw/cui_diff_view_ex dst ui (impl/str-arg id) (impl/str-arg old-text) (impl/str-arg new-text) (impl/in-ptr! wb [:struct :cui_diff_opts] opts)) (impl/read-struct :cui_diff_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_diff_result)] (raw/cui_diff_view_ex dst ui (impl/str-ptr id) (impl/str-ptr old-text) (impl/str-ptr new-text) (impl/in-ptr! wb [:struct :cui_diff_opts] opts)) (impl/read-struct :cui_diff_result dst)))))
 
 (defn diff-view-rows
   "int cui_diff_view_rows(cui_ctx * ui, const char * id, cui_diff_row * rows, int first, int cap)"
   [ui id rows first* cap]
-  (impl/with-call [wb] (raw/cui_diff_view_rows ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_diff_row] rows) (impl/arg-val [:scalar :int] first*) (impl/arg-val [:scalar :int] cap))))
+  (impl/with-call [wb] (raw/cui_diff_view_rows ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_diff_row] rows) (impl/arg-val [:scalar :int] first*) (impl/arg-val [:scalar :int] cap))))
 
 (defn diff-compute
   "int cui_diff_compute(const char * old_text, size_t old_len, const char * new_text, size_t new_len, unsigned flags, cui_diff_hunk * hunks, int cap, cui_diff_stats * stats)"
   [old-text old-len new-text new-len flags hunks stats]
-  (impl/with-call [wb] (raw/cui_diff_compute (impl/str-arg old-text) (impl/arg-val [:scalar :size_t] old-len) (impl/str-arg new-text) (impl/arg-val [:scalar :size_t] new-len) (impl/arg-val [:scalar :uint] flags) (impl/ref-ptr! wb [:struct :cui_diff_hunk] hunks) (impl/ref-count hunks) (impl/ref-ptr! wb [:struct :cui_diff_stats] stats))))
+  (impl/with-call [wb] (raw/cui_diff_compute (impl/str-ptr old-text) (impl/arg-val [:scalar :size_t] old-len) (impl/str-ptr new-text) (impl/arg-val [:scalar :size_t] new-len) (impl/arg-val [:scalar :uint] flags) (impl/ref-ptr! wb [:struct :cui_diff_hunk] hunks) (impl/ref-count hunks) (impl/ref-ptr! wb [:struct :cui_diff_stats] stats))))
 
 (defn diff-words
   "bool cui_diff_words(const char * old_line, int old_len, const char * new_line, int new_len, cui_diff_range * old_ranges, int * old_count, cui_diff_range * new_ranges, int * new_count, int cap)"
   [old-line old-len new-line new-len old-ranges old-count new-ranges new-count cap]
-  (impl/with-call [wb] (raw/cui_diff_words (impl/str-arg old-line) (impl/arg-val [:scalar :int] old-len) (impl/str-arg new-line) (impl/arg-val [:scalar :int] new-len) (impl/ref-ptr! wb [:struct :cui_diff_range] old-ranges) (impl/ref-ptr! wb [:scalar :int] old-count) (impl/ref-ptr! wb [:struct :cui_diff_range] new-ranges) (impl/ref-ptr! wb [:scalar :int] new-count) (impl/arg-val [:scalar :int] cap))))
+  (impl/with-call [wb] (raw/cui_diff_words (impl/str-ptr old-line) (impl/arg-val [:scalar :int] old-len) (impl/str-ptr new-line) (impl/arg-val [:scalar :int] new-len) (impl/ref-ptr! wb [:struct :cui_diff_range] old-ranges) (impl/ref-ptr! wb [:scalar :int] old-count) (impl/ref-ptr! wb [:struct :cui_diff_range] new-ranges) (impl/ref-ptr! wb [:scalar :int] new-count) (impl/arg-val [:scalar :int] cap))))
 
 (defn chat-message
   "void cui_chat_message_ex(cui_ctx * ui, const char * text, const cui_chat_opts * opts)"
   ([ui text] (chat-message ui text nil))
   ([ui text opts]
-   (impl/with-call [wb] (raw/cui_chat_message_ex ui (impl/str-arg text) (impl/in-ptr! wb [:struct :cui_chat_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_chat_message_ex ui (impl/str-ptr text) (impl/in-ptr! wb [:struct :cui_chat_opts] opts)))))
 
 (defn chat-divider
   "void cui_chat_divider(cui_ctx * ui, const char * label)"
   [ui label]
-  (raw/cui_chat_divider ui (impl/str-arg label)))
+  (raw/cui_chat_divider ui (impl/str-ptr label)))
 
 (defn typing-indicator
   "void cui_typing_indicator(cui_ctx * ui, const char * name)"
   [ui name*]
-  (raw/cui_typing_indicator ui (impl/str-arg name*)))
+  (raw/cui_typing_indicator ui (impl/str-ptr name*)))
 
 (defn comment
   "int cui_comment_ex(cui_ctx * ui, const char * id, const char * author, const char * text, const cui_comment_opts * opts)"
   ([ui id author text] (comment ui id author text nil))
   ([ui id author text opts]
-   (impl/with-call [wb] (raw/cui_comment_ex ui (impl/str-arg id) (impl/str-arg author) (impl/str-arg text) (impl/in-ptr! wb [:struct :cui_comment_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_comment_ex ui (impl/str-ptr id) (impl/str-ptr author) (impl/str-ptr text) (impl/in-ptr! wb [:struct :cui_comment_opts] opts)))))
 
 (defn presence
   "void cui_presence(cui_ctx * ui, const char * id, const cui_presence_user * users, int count, int max_visible, float size)"
   [ui id users max-visible size]
-  (impl/with-call [wb] (raw/cui_presence ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_presence_user] users) (count users) (impl/arg-val [:scalar :int] max-visible) (impl/arg-val [:scalar :float] size))))
+  (impl/with-call [wb] (raw/cui_presence ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_presence_user] users) (count users) (impl/arg-val [:scalar :int] max-visible) (impl/arg-val [:scalar :float] size))))
 
 (defn carousel-begin
   "bool cui_carousel_begin(cui_ctx * ui, const char * id, int count, int * index, const cui_carousel_opts * opts)"
   ([ui id count* index] (carousel-begin ui id count* index nil))
   ([ui id count* index opts]
-   (impl/with-call [wb] (raw/cui_carousel_begin ui (impl/str-arg id) (impl/arg-val [:scalar :int] count*) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_carousel_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_carousel_begin ui (impl/str-ptr id) (impl/arg-val [:scalar :int] count*) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_carousel_opts] opts)))))
 
 (defn carousel-slide-begin
   "void cui_carousel_slide_begin(cui_ctx * ui)"
@@ -1508,13 +1508,13 @@
   "bool cui_image_compare_ex(cui_ctx * ui, const char * id, cui_texture before, cui_texture after, float * pos, const cui_compare_opts * opts)"
   ([ui id before after pos] (image-compare ui id before after pos nil))
   ([ui id before after pos opts]
-   (impl/with-call [wb] (raw/cui_image_compare_ex ui (impl/str-arg id) (impl/arg-val [:scalar :uptr] before) (impl/arg-val [:scalar :uptr] after) (impl/ref-ptr! wb [:scalar :float] pos) (impl/in-ptr! wb [:struct :cui_compare_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_image_compare_ex ui (impl/str-ptr id) (impl/arg-val [:scalar :uptr] before) (impl/arg-val [:scalar :uptr] after) (impl/ref-ptr! wb [:scalar :float] pos) (impl/in-ptr! wb [:struct :cui_compare_opts] opts)))))
 
 (defn card-stack-begin
   "void cui_card_stack_begin(cui_ctx * ui, const char * id, int count, const cui_card_stack_opts * opts)"
   ([ui id count*] (card-stack-begin ui id count* nil))
   ([ui id count* opts]
-   (impl/with-call [wb] (raw/cui_card_stack_begin ui (impl/str-arg id) (impl/arg-val [:scalar :int] count*) (impl/in-ptr! wb [:struct :cui_card_stack_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_card_stack_begin ui (impl/str-ptr id) (impl/arg-val [:scalar :int] count*) (impl/in-ptr! wb [:struct :cui_card_stack_opts] opts)))))
 
 (defn card-stack-item-begin
   "void cui_card_stack_item_begin(cui_ctx * ui, int depth)"
@@ -1535,133 +1535,133 @@
   "void cui_counter_ex(cui_ctx * ui, const char * id, double value, const cui_counter_opts * opts)"
   ([ui id value] (counter ui id value nil))
   ([ui id value opts]
-   (impl/with-call [wb] (raw/cui_counter_ex ui (impl/str-arg id) (impl/arg-val [:scalar :double] value) (impl/in-ptr! wb [:struct :cui_counter_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_counter_ex ui (impl/str-ptr id) (impl/arg-val [:scalar :double] value) (impl/in-ptr! wb [:struct :cui_counter_opts] opts)))))
 
 (defn ticker
   "void cui_ticker_ex(cui_ctx * ui, const char * id, const cui_ticker_item * items, int count, const cui_ticker_opts * opts)"
   ([ui id items] (ticker ui id items nil))
   ([ui id items opts]
-   (impl/with-call [wb] (raw/cui_ticker_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_ticker_item] items) (count items) (impl/in-ptr! wb [:struct :cui_ticker_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_ticker_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_ticker_item] items) (count items) (impl/in-ptr! wb [:struct :cui_ticker_opts] opts)))))
 
 (defn heatmap
   "int cui_heatmap_ex(cui_ctx * ui, const char * id, const float * values, int rows, int cols, const cui_heatmap_opts * opts)"
   ([ui id values rows cols] (heatmap ui id values rows cols nil))
   ([ui id values rows cols opts]
-   (impl/with-call [wb] (raw/cui_heatmap_ex ui (impl/str-arg id) (impl/in-ptr! wb [:scalar :float] values) (impl/arg-val [:scalar :int] rows) (impl/arg-val [:scalar :int] cols) (impl/in-ptr! wb [:struct :cui_heatmap_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_heatmap_ex ui (impl/str-ptr id) (impl/in-ptr! wb [:scalar :float] values) (impl/arg-val [:scalar :int] rows) (impl/arg-val [:scalar :int] cols) (impl/in-ptr! wb [:struct :cui_heatmap_opts] opts)))))
 
 (defn calendar-heatmap
   "int cui_calendar_heatmap_ex(cui_ctx * ui, const char * id, cui_date start, const float * values, int days, const cui_calendar_heatmap_opts * opts)"
   ([ui id start values] (calendar-heatmap ui id start values nil))
   ([ui id start values opts]
-   (impl/with-call [wb] (raw/cui_calendar_heatmap_ex ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_date] start) (impl/vec-ptr! wb [:scalar :float] values) (count values) (impl/in-ptr! wb [:struct :cui_calendar_heatmap_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_calendar_heatmap_ex ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_date] start) (impl/vec-ptr! wb [:scalar :float] values) (count values) (impl/in-ptr! wb [:struct :cui_calendar_heatmap_opts] opts)))))
 
 (defn treemap
   "int cui_treemap_ex(cui_ctx * ui, const char * id, const cui_viz_item * items, int count, const cui_treemap_opts * opts)"
   ([ui id items] (treemap ui id items nil))
   ([ui id items opts]
-   (impl/with-call [wb] (raw/cui_treemap_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_viz_item] items) (count items) (impl/in-ptr! wb [:struct :cui_treemap_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_treemap_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_viz_item] items) (count items) (impl/in-ptr! wb [:struct :cui_treemap_opts] opts)))))
 
 (defn radar-chart
   "int cui_radar_chart_ex(cui_ctx * ui, const char * id, const cui_series * series, int count, const char * const * axes, int axis_count, const cui_radar_opts * opts)"
   ([ui id series axes] (radar-chart ui id series axes nil))
   ([ui id series axes opts]
-   (impl/with-call [wb] (raw/cui_radar_chart_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_series] series) (count series) (impl/strs-ptr axes) (count axes) (impl/in-ptr! wb [:struct :cui_radar_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_radar_chart_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_series] series) (count series) (impl/strs-ptr axes) (count axes) (impl/in-ptr! wb [:struct :cui_radar_opts] opts)))))
 
 (defn funnel
   "int cui_funnel_ex(cui_ctx * ui, const char * id, const cui_viz_item * stages, int count, const cui_funnel_opts * opts)"
   ([ui id stages] (funnel ui id stages nil))
   ([ui id stages opts]
-   (impl/with-call [wb] (raw/cui_funnel_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_viz_item] stages) (count stages) (impl/in-ptr! wb [:struct :cui_funnel_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_funnel_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_viz_item] stages) (count stages) (impl/in-ptr! wb [:struct :cui_funnel_opts] opts)))))
 
 (defn sankey
   "int cui_sankey_ex(cui_ctx * ui, const char * id, const char * const * nodes, int node_count, const cui_sankey_link * links, int link_count, const cui_sankey_opts * opts)"
   ([ui id nodes links] (sankey ui id nodes links nil))
   ([ui id nodes links opts]
-   (impl/with-call [wb] (raw/cui_sankey_ex ui (impl/str-arg id) (impl/strs-ptr nodes) (count nodes) (impl/vec-ptr! wb [:struct :cui_sankey_link] links) (count links) (impl/in-ptr! wb [:struct :cui_sankey_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_sankey_ex ui (impl/str-ptr id) (impl/strs-ptr nodes) (count nodes) (impl/vec-ptr! wb [:struct :cui_sankey_link] links) (count links) (impl/in-ptr! wb [:struct :cui_sankey_opts] opts)))))
 
 (defn waffle
   "int cui_waffle_ex(cui_ctx * ui, const char * id, const cui_viz_item * items, int count, const cui_waffle_opts * opts)"
   ([ui id items] (waffle ui id items nil))
   ([ui id items opts]
-   (impl/with-call [wb] (raw/cui_waffle_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_viz_item] items) (count items) (impl/in-ptr! wb [:struct :cui_waffle_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_waffle_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_viz_item] items) (count items) (impl/in-ptr! wb [:struct :cui_waffle_opts] opts)))))
 
 (defn split-bar
   "int cui_split_bar_ex(cui_ctx * ui, const char * id, const cui_viz_item * items, int count, const cui_split_bar_opts * opts)"
   ([ui id items] (split-bar ui id items nil))
   ([ui id items opts]
-   (impl/with-call [wb] (raw/cui_split_bar_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_viz_item] items) (count items) (impl/in-ptr! wb [:struct :cui_split_bar_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_split_bar_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_viz_item] items) (count items) (impl/in-ptr! wb [:struct :cui_split_bar_opts] opts)))))
 
 (defn bar-list
   "int cui_bar_list_ex(cui_ctx * ui, const char * id, const cui_viz_item * items, int count, const cui_bar_list_opts * opts)"
   ([ui id items] (bar-list ui id items nil))
   ([ui id items opts]
-   (impl/with-call [wb] (raw/cui_bar_list_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_viz_item] items) (count items) (impl/in-ptr! wb [:struct :cui_bar_list_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_bar_list_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_viz_item] items) (count items) (impl/in-ptr! wb [:struct :cui_bar_list_opts] opts)))))
 
 (defn activity-rings
   "int cui_activity_rings_ex(cui_ctx * ui, const char * id, const cui_viz_item * rings, int count, const cui_rings_opts * opts)"
   ([ui id rings] (activity-rings ui id rings nil))
   ([ui id rings opts]
-   (impl/with-call [wb] (raw/cui_activity_rings_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_viz_item] rings) (count rings) (impl/in-ptr! wb [:struct :cui_rings_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_activity_rings_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_viz_item] rings) (count rings) (impl/in-ptr! wb [:struct :cui_rings_opts] opts)))))
 
 (defn scatter-chart
   "int cui_scatter_chart_ex(cui_ctx * ui, const char * id, const cui_scatter_series * series, int count, const cui_scatter_opts * opts)"
   ([ui id series] (scatter-chart ui id series nil))
   ([ui id series opts]
-   (impl/with-call [wb] (raw/cui_scatter_chart_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_scatter_series] series) (count series) (impl/in-ptr! wb [:struct :cui_scatter_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_scatter_chart_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_scatter_series] series) (count series) (impl/in-ptr! wb [:struct :cui_scatter_opts] opts)))))
 
 (defn radial-gauge
   "void cui_radial_gauge_ex(cui_ctx * ui, const char * id, float value, float min, float max, const cui_radial_gauge_opts * opts)"
   ([ui id value min* max*] (radial-gauge ui id value min* max* nil))
   ([ui id value min* max* opts]
-   (impl/with-call [wb] (raw/cui_radial_gauge_ex ui (impl/str-arg id) (impl/arg-val [:scalar :float] value) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_radial_gauge_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_radial_gauge_ex ui (impl/str-ptr id) (impl/arg-val [:scalar :float] value) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_radial_gauge_opts] opts)))))
 
 (defn candlestick
   "int cui_candlestick_ex(cui_ctx * ui, const char * id, const cui_candle * candles, int count, const cui_candlestick_opts * opts)"
   ([ui id candles] (candlestick ui id candles nil))
   ([ui id candles opts]
-   (impl/with-call [wb] (raw/cui_candlestick_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_candle] candles) (count candles) (impl/in-ptr! wb [:struct :cui_candlestick_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_candlestick_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_candle] candles) (count candles) (impl/in-ptr! wb [:struct :cui_candlestick_opts] opts)))))
 
 (defn shimmer-text
   "void cui_shimmer_text_ex(cui_ctx * ui, const char * text, const cui_text_fx_opts * opts)"
   ([ui text] (shimmer-text ui text nil))
   ([ui text opts]
-   (impl/with-call [wb] (raw/cui_shimmer_text_ex ui (impl/str-arg text) (impl/in-ptr! wb [:struct :cui_text_fx_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_shimmer_text_ex ui (impl/str-ptr text) (impl/in-ptr! wb [:struct :cui_text_fx_opts] opts)))))
 
 (defn typewriter
   "bool cui_typewriter_ex(cui_ctx * ui, const char * id, const char * text, const cui_text_fx_opts * opts)"
   ([ui id text] (typewriter ui id text nil))
   ([ui id text opts]
-   (impl/with-call [wb] (raw/cui_typewriter_ex ui (impl/str-arg id) (impl/str-arg text) (impl/in-ptr! wb [:struct :cui_text_fx_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_typewriter_ex ui (impl/str-ptr id) (impl/str-ptr text) (impl/in-ptr! wb [:struct :cui_text_fx_opts] opts)))))
 
 (defn text-reveal
   "void cui_text_reveal_ex(cui_ctx * ui, const char * id, const char * text, const cui_text_fx_opts * opts)"
   ([ui id text] (text-reveal ui id text nil))
   ([ui id text opts]
-   (impl/with-call [wb] (raw/cui_text_reveal_ex ui (impl/str-arg id) (impl/str-arg text) (impl/in-ptr! wb [:struct :cui_text_fx_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_text_reveal_ex ui (impl/str-ptr id) (impl/str-ptr text) (impl/in-ptr! wb [:struct :cui_text_fx_opts] opts)))))
 
 (defn word-rotate
   "void cui_word_rotate_ex(cui_ctx * ui, const char * id, const char * const * words, int count, float interval, const cui_text_fx_opts * opts)"
   ([ui id words interval] (word-rotate ui id words interval nil))
   ([ui id words interval opts]
-   (impl/with-call [wb] (raw/cui_word_rotate_ex ui (impl/str-arg id) (impl/strs-ptr words) (count words) (impl/arg-val [:scalar :float] interval) (impl/in-ptr! wb [:struct :cui_text_fx_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_word_rotate_ex ui (impl/str-ptr id) (impl/strs-ptr words) (count words) (impl/arg-val [:scalar :float] interval) (impl/in-ptr! wb [:struct :cui_text_fx_opts] opts)))))
 
 (defn number-roll
   "void cui_number_roll_ex(cui_ctx * ui, const char * id, const char * text, const cui_text_fx_opts * opts)"
   ([ui id text] (number-roll ui id text nil))
   ([ui id text opts]
-   (impl/with-call [wb] (raw/cui_number_roll_ex ui (impl/str-arg id) (impl/str-arg text) (impl/in-ptr! wb [:struct :cui_text_fx_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_number_roll_ex ui (impl/str-ptr id) (impl/str-ptr text) (impl/in-ptr! wb [:struct :cui_text_fx_opts] opts)))))
 
 (defn gradient-text
   "void cui_gradient_text_ex(cui_ctx * ui, const char * text, const cui_gradient_text_opts * opts)"
   ([ui text] (gradient-text ui text nil))
   ([ui text opts]
-   (impl/with-call [wb] (raw/cui_gradient_text_ex ui (impl/str-arg text) (impl/in-ptr! wb [:struct :cui_gradient_text_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_gradient_text_ex ui (impl/str-ptr text) (impl/in-ptr! wb [:struct :cui_gradient_text_opts] opts)))))
 
 (defn spotlight-begin
   "void cui_spotlight_begin(cui_ctx * ui, const char * id, const cui_spotlight_opts * opts)"
   ([ui id] (spotlight-begin ui id nil))
   ([ui id opts]
-   (impl/with-call [wb] (raw/cui_spotlight_begin ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_spotlight_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_spotlight_begin ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_spotlight_opts] opts)))))
 
 (defn spotlight-end
   "void cui_spotlight_end(cui_ctx * ui)"
@@ -1678,13 +1678,13 @@
   "void cui_dock_begin(cui_ctx * ui, const char * id, const cui_dock_opts * opts)"
   ([ui id] (dock-begin ui id nil))
   ([ui id opts]
-   (impl/with-call [wb] (raw/cui_dock_begin ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_dock_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_dock_begin ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_dock_opts] opts)))))
 
 (defn dock-item
   "bool cui_dock_item_ex(cui_ctx * ui, const char * icon, const char * label, const cui_dock_item_opts * opts)"
   ([ui icon label] (dock-item ui icon label nil))
   ([ui icon label opts]
-   (impl/with-call [wb] (raw/cui_dock_item_ex ui (impl/str-arg icon) (impl/str-arg label) (impl/in-ptr! wb [:struct :cui_dock_item_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_dock_item_ex ui (impl/str-ptr icon) (impl/str-ptr label) (impl/in-ptr! wb [:struct :cui_dock_item_opts] opts)))))
 
 (defn dock-separator
   "void cui_dock_separator(cui_ctx * ui)"
@@ -1700,31 +1700,31 @@
   "bool cui_tab_bar_ex(cui_ctx * ui, const char * id, const cui_tab_bar_item * items, int count, int * selected, const cui_tab_bar_opts * opts)"
   ([ui id items selected] (tab-bar ui id items selected nil))
   ([ui id items selected opts]
-   (impl/with-call [wb] (raw/cui_tab_bar_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_tab_bar_item] items) (count items) (impl/ref-ptr! wb [:scalar :int] selected) (impl/in-ptr! wb [:struct :cui_tab_bar_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_tab_bar_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_tab_bar_item] items) (count items) (impl/ref-ptr! wb [:scalar :int] selected) (impl/in-ptr! wb [:struct :cui_tab_bar_opts] opts)))))
 
 (defn control-tile
   "bool cui_control_tile_ex(cui_ctx * ui, const char * label, bool * on, const cui_tile_opts * opts)"
   ([ui label on] (control-tile ui label on nil))
   ([ui label on opts]
-   (impl/with-call [wb] (raw/cui_control_tile_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:bool] on) (impl/in-ptr! wb [:struct :cui_tile_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_control_tile_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:bool] on) (impl/in-ptr! wb [:struct :cui_tile_opts] opts)))))
 
 (defn waveform
   "bool cui_waveform_ex(cui_ctx * ui, const char * id, const float * peaks, int count, float * progress, const cui_waveform_opts * opts)"
   ([ui id peaks progress] (waveform ui id peaks progress nil))
   ([ui id peaks progress opts]
-   (impl/with-call [wb] (raw/cui_waveform_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:scalar :float] peaks) (count peaks) (impl/ref-ptr! wb [:scalar :float] progress) (impl/in-ptr! wb [:struct :cui_waveform_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_waveform_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:scalar :float] peaks) (count peaks) (impl/ref-ptr! wb [:scalar :float] progress) (impl/in-ptr! wb [:struct :cui_waveform_opts] opts)))))
 
 (defn now-playing
   "int cui_now_playing_ex(cui_ctx * ui, const char * id, cui_now_playing * np, const cui_now_playing_opts * opts)"
   ([ui id np] (now-playing ui id np nil))
   ([ui id np opts]
-   (impl/with-call [wb] (raw/cui_now_playing_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_now_playing] np) (impl/in-ptr! wb [:struct :cui_now_playing_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_now_playing_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_now_playing] np) (impl/in-ptr! wb [:struct :cui_now_playing_opts] opts)))))
 
 (defn reasoning-begin
   "bool cui_reasoning_begin(cui_ctx * ui, const char * id, const cui_reasoning_opts * opts)"
   ([ui id] (reasoning-begin ui id nil))
   ([ui id opts]
-   (impl/with-call [wb] (raw/cui_reasoning_begin ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_reasoning_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_reasoning_begin ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_reasoning_opts] opts)))))
 
 (defn reasoning-end
   "void cui_reasoning_end(cui_ctx * ui)"
@@ -1735,24 +1735,24 @@
   "void cui_tool_call_ex(cui_ctx * ui, const char * id, const char * name, const cui_tool_call_opts * opts)"
   ([ui id name*] (tool-call ui id name* nil))
   ([ui id name* opts]
-   (impl/with-call [wb] (raw/cui_tool_call_ex ui (impl/str-arg id) (impl/str-arg name*) (impl/in-ptr! wb [:struct :cui_tool_call_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_tool_call_ex ui (impl/str-ptr id) (impl/str-ptr name*) (impl/in-ptr! wb [:struct :cui_tool_call_opts] opts)))))
 
 (defn agent-plan
   "int cui_agent_plan_ex(cui_ctx * ui, const char * id, const cui_plan_step * steps, int count, const cui_agent_plan_opts * opts)"
   ([ui id steps] (agent-plan ui id steps nil))
   ([ui id steps opts]
-   (impl/with-call [wb] (raw/cui_agent_plan_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_plan_step] steps) (count steps) (impl/in-ptr! wb [:struct :cui_agent_plan_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_agent_plan_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_plan_step] steps) (count steps) (impl/in-ptr! wb [:struct :cui_agent_plan_opts] opts)))))
 
 (defn agent-status
   "void cui_agent_status_ex(cui_ctx * ui, const char * text, const cui_agent_status_opts * opts)"
   ([ui text] (agent-status ui text nil))
   ([ui text opts]
-   (impl/with-call [wb] (raw/cui_agent_status_ex ui (impl/str-arg text) (impl/in-ptr! wb [:struct :cui_agent_status_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_agent_status_ex ui (impl/str-ptr text) (impl/in-ptr! wb [:struct :cui_agent_status_opts] opts)))))
 
 (defn source-list
   "int cui_source_list(cui_ctx * ui, const char * id, const cui_source * sources, int count)"
   [ui id sources]
-  (impl/with-call [wb] (raw/cui_source_list ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_source] sources) (count sources))))
+  (impl/with-call [wb] (raw/cui_source_list ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_source] sources) (count sources))))
 
 (defn citation
   "bool cui_citation(cui_ctx * ui, int number, const cui_source * source)"
@@ -1763,43 +1763,43 @@
   "void cui_context_meter_ex(cui_ctx * ui, const char * id, float used, float limit, const cui_context_opts * opts)"
   ([ui id used limit] (context-meter ui id used limit nil))
   ([ui id used limit opts]
-   (impl/with-call [wb] (raw/cui_context_meter_ex ui (impl/str-arg id) (impl/arg-val [:scalar :float] used) (impl/arg-val [:scalar :float] limit) (impl/in-ptr! wb [:struct :cui_context_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_context_meter_ex ui (impl/str-ptr id) (impl/arg-val [:scalar :float] used) (impl/arg-val [:scalar :float] limit) (impl/in-ptr! wb [:struct :cui_context_opts] opts)))))
 
 (defn response-actions
   "int cui_response_actions_ex(cui_ctx * ui, const char * id, const cui_response_actions_opts * opts)"
   ([ui id] (response-actions ui id nil))
   ([ui id opts]
-   (impl/with-call [wb] (raw/cui_response_actions_ex ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_response_actions_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_response_actions_ex ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_response_actions_opts] opts)))))
 
 (defn prompt-suggestions
   "int cui_prompt_suggestions_ex(cui_ctx * ui, const char * id, const cui_prompt_suggestion * items, int count, const cui_prompt_suggestions_opts * opts)"
   ([ui id items] (prompt-suggestions ui id items nil))
   ([ui id items opts]
-   (impl/with-call [wb] (raw/cui_prompt_suggestions_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_prompt_suggestion] items) (count items) (impl/in-ptr! wb [:struct :cui_prompt_suggestions_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_prompt_suggestions_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_prompt_suggestion] items) (count items) (impl/in-ptr! wb [:struct :cui_prompt_suggestions_opts] opts)))))
 
 (defn model-picker
   "bool cui_model_picker_ex(cui_ctx * ui, const char * id, const cui_model * models, int count, int * selected, const cui_model_picker_opts * opts)"
   ([ui id models selected] (model-picker ui id models selected nil))
   ([ui id models selected opts]
-   (impl/with-call [wb] (raw/cui_model_picker_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_model] models) (count models) (impl/ref-ptr! wb [:scalar :int] selected) (impl/in-ptr! wb [:struct :cui_model_picker_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_model_picker_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_model] models) (count models) (impl/ref-ptr! wb [:scalar :int] selected) (impl/in-ptr! wb [:struct :cui_model_picker_opts] opts)))))
 
 (defn chat-composer
   "int cui_chat_composer_ex(cui_ctx * ui, const char * id, char * buf, size_t cap, const cui_composer_opts * opts)"
   ([ui id buf] (chat-composer ui id buf nil))
   ([ui id buf opts]
-   (impl/with-call [wb] (raw/cui_chat_composer_ex ui (impl/str-arg id) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_composer_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_chat_composer_ex ui (impl/str-ptr id) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_composer_opts] opts)))))
 
 (defn voice-orb
   "bool cui_voice_orb_ex(cui_ctx * ui, const char * id, cui_voice_state state, float level, const cui_voice_orb_opts * opts)"
   ([ui id state level] (voice-orb ui id state level nil))
   ([ui id state level opts]
-   (impl/with-call [wb] (raw/cui_voice_orb_ex ui (impl/str-arg id) (impl/arg-val [:enum :cui_voice_state] state) (impl/arg-val [:scalar :float] level) (impl/in-ptr! wb [:struct :cui_voice_orb_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_voice_orb_ex ui (impl/str-ptr id) (impl/arg-val [:enum :cui_voice_state] state) (impl/arg-val [:scalar :float] level) (impl/in-ptr! wb [:struct :cui_voice_orb_opts] opts)))))
 
 (defn voice-wave
   "bool cui_voice_wave_ex(cui_ctx * ui, const char * id, const float * levels, int count, const cui_voice_wave_opts * opts)"
   ([ui id levels] (voice-wave ui id levels nil))
   ([ui id levels opts]
-   (impl/with-call [wb] (raw/cui_voice_wave_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:scalar :float] levels) (count levels) (impl/in-ptr! wb [:struct :cui_voice_wave_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_voice_wave_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:scalar :float] levels) (count levels) (impl/in-ptr! wb [:struct :cui_voice_wave_opts] opts)))))
 
 (defn voice-resample
   "int cui_voice_resample(const float * levels, int count, float * out, int columns)"
@@ -1810,24 +1810,24 @@
   "int cui_voice_note_ex(cui_ctx * ui, const char * id, cui_voice_note * note, const cui_voice_note_opts * opts)"
   ([ui id note] (voice-note ui id note nil))
   ([ui id note opts]
-   (impl/with-call [wb] (raw/cui_voice_note_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_voice_note] note) (impl/in-ptr! wb [:struct :cui_voice_note_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_voice_note_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_voice_note] note) (impl/in-ptr! wb [:struct :cui_voice_note_opts] opts)))))
 
 (defn voice-session
   "int cui_voice_session_ex(cui_ctx * ui, const char * id, cui_voice_state state, const float * levels, int count, const cui_voice_session_opts * opts)"
   ([ui id state levels] (voice-session ui id state levels nil))
   ([ui id state levels opts]
-   (impl/with-call [wb] (raw/cui_voice_session_ex ui (impl/str-arg id) (impl/arg-val [:enum :cui_voice_state] state) (impl/vec-ptr! wb [:scalar :float] levels) (count levels) (impl/in-ptr! wb [:struct :cui_voice_session_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_voice_session_ex ui (impl/str-ptr id) (impl/arg-val [:enum :cui_voice_state] state) (impl/vec-ptr! wb [:scalar :float] levels) (count levels) (impl/in-ptr! wb [:struct :cui_voice_session_opts] opts)))))
 
 (defn kanban-begin
   "void cui_kanban_begin(cui_ctx * ui, const char * id)"
   [ui id]
-  (raw/cui_kanban_begin ui (impl/str-arg id)))
+  (raw/cui_kanban_begin ui (impl/str-ptr id)))
 
 (defn kanban-column-begin
   "bool cui_kanban_column_begin_ex(cui_ctx * ui, const char * title, int card_count, const cui_kanban_column_opts * opts)"
   ([ui title card-count] (kanban-column-begin ui title card-count nil))
   ([ui title card-count opts]
-   (impl/with-call [wb] (raw/cui_kanban_column_begin_ex ui (impl/str-arg title) (impl/arg-val [:scalar :int] card-count) (impl/in-ptr! wb [:struct :cui_kanban_column_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_kanban_column_begin_ex ui (impl/str-ptr title) (impl/arg-val [:scalar :int] card-count) (impl/in-ptr! wb [:struct :cui_kanban_column_opts] opts)))))
 
 (defn kanban-card-begin
   "bool cui_kanban_card_begin(cui_ctx * ui, int card_id)"
@@ -1853,25 +1853,25 @@
   "int cui_week_calendar_ex(cui_ctx * ui, const char * id, cui_date week_start, cui_cal_event * events, int count, const cui_week_opts * opts)"
   ([ui id week-start events] (week-calendar ui id week-start events nil))
   ([ui id week-start events opts]
-   (impl/with-call [wb] (raw/cui_week_calendar_ex ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_date] week-start) (impl/ref-ptr! wb [:struct :cui_cal_event] events) (impl/ref-count events) (impl/in-ptr! wb [:struct :cui_week_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_week_calendar_ex ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_date] week-start) (impl/ref-ptr! wb [:struct :cui_cal_event] events) (impl/ref-count events) (impl/in-ptr! wb [:struct :cui_week_opts] opts)))))
 
 (defn month-calendar
   "cui_month_result cui_month_calendar_ex(cui_ctx * ui, const char * id, cui_date * month, const cui_month_event * events, int count, const cui_month_opts * opts)"
   ([ui id month events] (month-calendar ui id month events nil))
   ([ui id month events opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_month_result)] (raw/cui_month_calendar_ex dst ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_date] month) (impl/vec-ptr! wb [:struct :cui_month_event] events) (count events) (impl/in-ptr! wb [:struct :cui_month_opts] opts)) (impl/read-struct :cui_month_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_month_result)] (raw/cui_month_calendar_ex dst ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_date] month) (impl/vec-ptr! wb [:struct :cui_month_event] events) (count events) (impl/in-ptr! wb [:struct :cui_month_opts] opts)) (impl/read-struct :cui_month_result dst)))))
 
 (defn gantt
   "int cui_gantt_ex(cui_ctx * ui, const char * id, cui_gantt_task * tasks, int count, cui_date origin, int days, const cui_gantt_opts * opts)"
   ([ui id tasks origin days] (gantt ui id tasks origin days nil))
   ([ui id tasks origin days opts]
-   (impl/with-call [wb] (raw/cui_gantt_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_gantt_task] tasks) (impl/ref-count tasks) (impl/in-ptr! wb [:struct :cui_date] origin) (impl/arg-val [:scalar :int] days) (impl/in-ptr! wb [:struct :cui_gantt_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_gantt_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_gantt_task] tasks) (impl/ref-count tasks) (impl/in-ptr! wb [:struct :cui_date] origin) (impl/arg-val [:scalar :int] days) (impl/in-ptr! wb [:struct :cui_gantt_opts] opts)))))
 
 (defn hover-card-begin
   "bool cui_hover_card_begin(cui_ctx * ui, const char * id, const cui_hover_card_opts * opts)"
   ([ui id] (hover-card-begin ui id nil))
   ([ui id opts]
-   (impl/with-call [wb] (raw/cui_hover_card_begin ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_hover_card_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_hover_card_begin ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_hover_card_opts] opts)))))
 
 (defn hover-card-end
   "void cui_hover_card_end(cui_ctx * ui)"
@@ -1882,19 +1882,19 @@
   "bool cui_confirm_popover_ex(cui_ctx * ui, const char * id, const cui_confirm_popover_opts * opts)"
   ([ui id] (confirm-popover ui id nil))
   ([ui id opts]
-   (impl/with-call [wb] (raw/cui_confirm_popover_ex ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_confirm_popover_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_confirm_popover_ex ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_confirm_popover_opts] opts)))))
 
 (defn expandable-text
   "bool cui_expandable_text_ex(cui_ctx * ui, const char * id, const char * text, const cui_expandable_text_opts * opts)"
   ([ui id text] (expandable-text ui id text nil))
   ([ui id text opts]
-   (impl/with-call [wb] (raw/cui_expandable_text_ex ui (impl/str-arg id) (impl/str-arg text) (impl/in-ptr! wb [:struct :cui_expandable_text_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_expandable_text_ex ui (impl/str-ptr id) (impl/str-ptr text) (impl/in-ptr! wb [:struct :cui_expandable_text_opts] opts)))))
 
 (defn expandable-card-begin
   "bool cui_expandable_card_begin(cui_ctx * ui, const char * title, bool * open, const cui_expandable_card_opts * opts)"
   ([ui title open] (expandable-card-begin ui title open nil))
   ([ui title open opts]
-   (impl/with-call [wb] (raw/cui_expandable_card_begin ui (impl/str-arg title) (impl/ref-ptr! wb [:bool] open) (impl/in-ptr! wb [:struct :cui_expandable_card_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_expandable_card_begin ui (impl/str-ptr title) (impl/ref-ptr! wb [:bool] open) (impl/in-ptr! wb [:struct :cui_expandable_card_opts] opts)))))
 
 (defn expandable-card-end
   "void cui_expandable_card_end(cui_ctx * ui)"
@@ -1904,36 +1904,36 @@
 (defn toc
   "int cui_toc(cui_ctx * ui, const char * scroll_id, const cui_toc_item * items, int count)"
   [ui scroll-id items]
-  (impl/with-call [wb] (raw/cui_toc ui (impl/str-arg scroll-id) (impl/vec-ptr! wb [:struct :cui_toc_item] items) (count items))))
+  (impl/with-call [wb] (raw/cui_toc ui (impl/str-ptr scroll-id) (impl/vec-ptr! wb [:struct :cui_toc_item] items) (count items))))
 
 (defn toc-anchor
   "void cui_toc_anchor(cui_ctx * ui, const char * anchor)"
   [ui anchor]
-  (raw/cui_toc_anchor ui (impl/str-arg anchor)))
+  (raw/cui_toc_anchor ui (impl/str-ptr anchor)))
 
 (defn banner
   "bool cui_banner_ex(cui_ctx * ui, const char * text, bool * open, const cui_banner_opts * opts)"
   ([ui text open] (banner ui text open nil))
   ([ui text open opts]
-   (impl/with-call [wb] (raw/cui_banner_ex ui (impl/str-arg text) (impl/ref-ptr! wb [:bool] open) (impl/in-ptr! wb [:struct :cui_banner_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_banner_ex ui (impl/str-ptr text) (impl/ref-ptr! wb [:bool] open) (impl/in-ptr! wb [:struct :cui_banner_opts] opts)))))
 
 (defn countdown
   "void cui_countdown_ex(cui_ctx * ui, const char * id, double seconds_left, const cui_countdown_opts * opts)"
   ([ui id seconds-left] (countdown ui id seconds-left nil))
   ([ui id seconds-left opts]
-   (impl/with-call [wb] (raw/cui_countdown_ex ui (impl/str-arg id) (impl/arg-val [:scalar :double] seconds-left) (impl/in-ptr! wb [:struct :cui_countdown_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_countdown_ex ui (impl/str-ptr id) (impl/arg-val [:scalar :double] seconds-left) (impl/in-ptr! wb [:struct :cui_countdown_opts] opts)))))
 
 (defn checklist
   "int cui_checklist_ex(cui_ctx * ui, const char * id, cui_check_step * steps, int count, const cui_checklist_opts * opts)"
   ([ui id steps] (checklist ui id steps nil))
   ([ui id steps opts]
-   (impl/with-call [wb] (raw/cui_checklist_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_check_step] steps) (impl/ref-count steps) (impl/in-ptr! wb [:struct :cui_checklist_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_checklist_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_check_step] steps) (impl/ref-count steps) (impl/in-ptr! wb [:struct :cui_checklist_opts] opts)))))
 
 (defn veil-begin
   "bool cui_veil_begin_ex(cui_ctx * ui, const char * id, bool * revealed, const cui_veil_opts * opts)"
   ([ui id revealed] (veil-begin ui id revealed nil))
   ([ui id revealed opts]
-   (impl/with-call [wb] (raw/cui_veil_begin_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:bool] revealed) (impl/in-ptr! wb [:struct :cui_veil_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_veil_begin_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:bool] revealed) (impl/in-ptr! wb [:struct :cui_veil_opts] opts)))))
 
 (defn veil-end
   "void cui_veil_end(cui_ctx * ui)"
@@ -1944,18 +1944,18 @@
   "bool cui_multi_select_ex(cui_ctx * ui, const char * id, const char * const * items, int count, bool * selected, const cui_multi_select_opts * opts)"
   ([ui id items selected] (multi-select ui id items selected nil))
   ([ui id items selected opts]
-   (impl/with-call [wb] (raw/cui_multi_select_ex ui (impl/str-arg id) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:bool] selected) (impl/in-ptr! wb [:struct :cui_multi_select_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_multi_select_ex ui (impl/str-ptr id) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:bool] selected) (impl/in-ptr! wb [:struct :cui_multi_select_opts] opts)))))
 
 (defn range-calendar
   "bool cui_range_calendar(cui_ctx * ui, const char * id, cui_date_range * range, int months)"
   [ui id range* months]
-  (impl/with-call [wb] (raw/cui_range_calendar ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_date_range] range*) (impl/arg-val [:scalar :int] months))))
+  (impl/with-call [wb] (raw/cui_range_calendar ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_date_range] range*) (impl/arg-val [:scalar :int] months))))
 
 (defn date-range-picker
   "bool cui_date_range_picker_ex(cui_ctx * ui, const char * id, cui_date_range * range, const cui_date_range_opts * opts)"
   ([ui id range*] (date-range-picker ui id range* nil))
   ([ui id range* opts]
-   (impl/with-call [wb] (raw/cui_date_range_picker_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_date_range] range*) (impl/in-ptr! wb [:struct :cui_date_range_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_date_range_picker_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_date_range] range*) (impl/in-ptr! wb [:struct :cui_date_range_opts] opts)))))
 
 (defn date-to-days
   "int cui_date_to_days(cui_date d)"
@@ -1971,104 +1971,104 @@
   "bool cui_time_picker_ex(cui_ctx * ui, const char * id, int * hour, int * minute, const cui_time_opts * opts)"
   ([ui id hour minute] (time-picker ui id hour minute nil))
   ([ui id hour minute opts]
-   (impl/with-call [wb] (raw/cui_time_picker_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:scalar :int] hour) (impl/ref-ptr! wb [:scalar :int] minute) (impl/in-ptr! wb [:struct :cui_time_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_time_picker_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:scalar :int] hour) (impl/ref-ptr! wb [:scalar :int] minute) (impl/in-ptr! wb [:struct :cui_time_opts] opts)))))
 
 (defn wheel-picker
   "bool cui_wheel_picker_ex(cui_ctx * ui, const char * id, const char * const * items, int count, int * index, const cui_wheel_opts * opts)"
   ([ui id items index] (wheel-picker ui id items index nil))
   ([ui id items index opts]
-   (impl/with-call [wb] (raw/cui_wheel_picker_ex ui (impl/str-arg id) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_wheel_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_wheel_picker_ex ui (impl/str-ptr id) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_wheel_opts] opts)))))
 
 (defn time-dial
   "bool cui_time_dial(cui_ctx * ui, const char * id, int * hour, int * minute, float size)"
   [ui id hour minute size]
-  (impl/with-call [wb] (raw/cui_time_dial ui (impl/str-arg id) (impl/ref-ptr! wb [:scalar :int] hour) (impl/ref-ptr! wb [:scalar :int] minute) (impl/arg-val [:scalar :float] size))))
+  (impl/with-call [wb] (raw/cui_time_dial ui (impl/str-ptr id) (impl/ref-ptr! wb [:scalar :int] hour) (impl/ref-ptr! wb [:scalar :int] minute) (impl/arg-val [:scalar :float] size))))
 
 (defn ruler-slider
   "bool cui_ruler_slider_ex(cui_ctx * ui, const char * label, float * value, float min, float max, const cui_ruler_opts * opts)"
   ([ui label value min* max*] (ruler-slider ui label value min* max* nil))
   ([ui label value min* max* opts]
-   (impl/with-call [wb] (raw/cui_ruler_slider_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:scalar :float] value) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_ruler_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_ruler_slider_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:scalar :float] value) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_ruler_opts] opts)))))
 
 (defn histogram-slider
   "bool cui_histogram_slider_ex(cui_ctx * ui, const char * label, const float * bins, int bin_count, float * lo, float * hi, float min, float max, const cui_histogram_opts * opts)"
   ([ui label bins lo hi min* max*] (histogram-slider ui label bins lo hi min* max* nil))
   ([ui label bins lo hi min* max* opts]
-   (impl/with-call [wb] (raw/cui_histogram_slider_ex ui (impl/str-arg label) (impl/vec-ptr! wb [:scalar :float] bins) (count bins) (impl/ref-ptr! wb [:scalar :float] lo) (impl/ref-ptr! wb [:scalar :float] hi) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_histogram_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_histogram_slider_ex ui (impl/str-ptr label) (impl/vec-ptr! wb [:scalar :float] bins) (count bins) (impl/ref-ptr! wb [:scalar :float] lo) (impl/ref-ptr! wb [:scalar :float] hi) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_histogram_opts] opts)))))
 
 (defn knob
   "bool cui_knob_ex(cui_ctx * ui, const char * id, float * value, float min, float max, const cui_knob_opts * opts)"
   ([ui id value min* max*] (knob ui id value min* max* nil))
   ([ui id value min* max* opts]
-   (impl/with-call [wb] (raw/cui_knob_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:scalar :float] value) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_knob_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_knob_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:scalar :float] value) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_knob_opts] opts)))))
 
 (defn fader
   "bool cui_fader_ex(cui_ctx * ui, const char * id, float * value, float min, float max, const cui_fader_opts * opts)"
   ([ui id value min* max*] (fader ui id value min* max* nil))
   ([ui id value min* max* opts]
-   (impl/with-call [wb] (raw/cui_fader_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:scalar :float] value) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_fader_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_fader_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:scalar :float] value) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_fader_opts] opts)))))
 
 (defn level-meter
   "bool cui_level_meter_ex(cui_ctx * ui, const char * id, const float * levels, int channels, const cui_level_meter_opts * opts)"
   ([ui id levels] (level-meter ui id levels nil))
   ([ui id levels opts]
-   (impl/with-call [wb] (raw/cui_level_meter_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:scalar :float] levels) (count levels) (impl/in-ptr! wb [:struct :cui_level_meter_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_level_meter_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:scalar :float] levels) (count levels) (impl/in-ptr! wb [:struct :cui_level_meter_opts] opts)))))
 
 (defn signature-pad
   "bool cui_signature_pad_ex(cui_ctx * ui, const char * id, const cui_signature_opts * opts)"
   ([ui id] (signature-pad ui id nil))
   ([ui id opts]
-   (impl/with-call [wb] (raw/cui_signature_pad_ex ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_signature_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_signature_pad_ex ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_signature_opts] opts)))))
 
 (defn signature-points
   "int cui_signature_points(cui_ctx * ui, const char * id, const cui_vec2 * * points, const int * * stroke_ends, int * stroke_count)"
   [ui id points stroke-ends stroke-count]
-  (impl/with-call [wb] (raw/cui_signature_points ui (impl/str-arg id) points stroke-ends (impl/ref-ptr! wb [:scalar :int] stroke-count))))
+  (impl/with-call [wb] (raw/cui_signature_points ui (impl/str-ptr id) points stroke-ends (impl/ref-ptr! wb [:scalar :int] stroke-count))))
 
 (defn signature-clear
   "void cui_signature_clear(cui_ctx * ui, const char * id)"
   [ui id]
-  (raw/cui_signature_clear ui (impl/str-arg id)))
+  (raw/cui_signature_clear ui (impl/str-ptr id)))
 
 (defn dropzone
   "int cui_dropzone_ex(cui_ctx * ui, const char * id, const cui_dropzone_opts * opts)"
   ([ui id] (dropzone ui id nil))
   ([ui id opts]
-   (impl/with-call [wb] (raw/cui_dropzone_ex ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_dropzone_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_dropzone_ex ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_dropzone_opts] opts)))))
 
 (defn path-has-extension
   "bool cui_path_has_extension(const char * path, const char * accept)"
   [path accept]
-  (raw/cui_path_has_extension (impl/str-arg path) (impl/str-arg accept)))
+  (raw/cui_path_has_extension (impl/str-ptr path) (impl/str-ptr accept)))
 
 (defn avatar-upload
   "int cui_avatar_upload(cui_ctx * ui, const char * id, const char * name, cui_texture * image, float size)"
   [ui id name* image size]
-  (impl/with-call [wb] (raw/cui_avatar_upload ui (impl/str-arg id) (impl/str-arg name*) (impl/ref-ptr! wb [:scalar :uptr] image) (impl/arg-val [:scalar :float] size))))
+  (impl/with-call [wb] (raw/cui_avatar_upload ui (impl/str-ptr id) (impl/str-ptr name*) (impl/ref-ptr! wb [:scalar :uptr] image) (impl/arg-val [:scalar :float] size))))
 
 (defn inline-edit
   "int cui_inline_edit_ex(cui_ctx * ui, const char * id, char * buf, size_t cap, const cui_inline_edit_opts * opts)"
   ([ui id buf] (inline-edit ui id buf nil))
   ([ui id buf opts]
-   (impl/with-call [wb] (raw/cui_inline_edit_ex ui (impl/str-arg id) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_inline_edit_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_inline_edit_ex ui (impl/str-ptr id) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_inline_edit_opts] opts)))))
 
 (defn scrub
   "bool cui_scrub_ex(cui_ctx * ui, const char * label, float * value, float min, float max, const cui_scrub_opts * opts)"
   ([ui label value min* max*] (scrub ui label value min* max* nil))
   ([ui label value min* max* opts]
-   (impl/with-call [wb] (raw/cui_scrub_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:scalar :float] value) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_scrub_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_scrub_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:scalar :float] value) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_scrub_opts] opts)))))
 
 (defn money-input
   "bool cui_money_input_ex(cui_ctx * ui, const char * id, double * value, const cui_money_opts * opts)"
   ([ui id value] (money-input ui id value nil))
   ([ui id value opts]
-   (impl/with-call [wb] (raw/cui_money_input_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:scalar :double] value) (impl/in-ptr! wb [:struct :cui_money_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_money_input_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:scalar :double] value) (impl/in-ptr! wb [:struct :cui_money_opts] opts)))))
 
 (defn shortcut-recorder
   "bool cui_shortcut_recorder_ex(cui_ctx * ui, const char * id, cui_key_combo * combo, const cui_shortcut_recorder_opts * opts)"
   ([ui id combo] (shortcut-recorder ui id combo nil))
   ([ui id combo opts]
-   (impl/with-call [wb] (raw/cui_shortcut_recorder_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_key_combo] combo) (impl/in-ptr! wb [:struct :cui_shortcut_recorder_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_shortcut_recorder_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_key_combo] combo) (impl/in-ptr! wb [:struct :cui_shortcut_recorder_opts] opts)))))
 
 (defn shortcut-label
   "const char * cui_shortcut_label(cui_ctx * ui, cui_key_combo combo)"
@@ -2084,7 +2084,7 @@
   "bool cui_node_editor_begin_ex(cui_ctx * ui, const char * id, cui_node_view * view, const cui_node_editor_opts * opts)"
   ([ui id view] (node-editor-begin ui id view nil))
   ([ui id view opts]
-   (impl/with-call [wb] (raw/cui_node_editor_begin_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_node_view] view) (impl/in-ptr! wb [:struct :cui_node_editor_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_node_editor_begin_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_node_view] view) (impl/in-ptr! wb [:struct :cui_node_editor_opts] opts)))))
 
 (defn node-editor-end
   "void cui_node_editor_end(cui_ctx * ui)"
@@ -2095,7 +2095,7 @@
   "bool cui_node_begin_ex(cui_ctx * ui, int node_id, float * x, float * y, const char * title, const cui_node_opts * opts)"
   ([ui node-id x y title] (node-begin ui node-id x y title nil))
   ([ui node-id x y title opts]
-   (impl/with-call [wb] (raw/cui_node_begin_ex ui (impl/arg-val [:scalar :int] node-id) (impl/ref-ptr! wb [:scalar :float] x) (impl/ref-ptr! wb [:scalar :float] y) (impl/str-arg title) (impl/in-ptr! wb [:struct :cui_node_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_node_begin_ex ui (impl/arg-val [:scalar :int] node-id) (impl/ref-ptr! wb [:scalar :float] x) (impl/ref-ptr! wb [:scalar :float] y) (impl/str-ptr title) (impl/in-ptr! wb [:struct :cui_node_opts] opts)))))
 
 (defn node-end
   "void cui_node_end(cui_ctx * ui)"
@@ -2106,13 +2106,13 @@
   "bool cui_node_input_ex(cui_ctx * ui, int pin_id, const char * label, const cui_pin_opts * opts)"
   ([ui pin-id label] (node-input ui pin-id label nil))
   ([ui pin-id label opts]
-   (impl/with-call [wb] (raw/cui_node_input_ex ui (impl/arg-val [:scalar :int] pin-id) (impl/str-arg label) (impl/in-ptr! wb [:struct :cui_pin_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_node_input_ex ui (impl/arg-val [:scalar :int] pin-id) (impl/str-ptr label) (impl/in-ptr! wb [:struct :cui_pin_opts] opts)))))
 
 (defn node-output
   "bool cui_node_output_ex(cui_ctx * ui, int pin_id, const char * label, const cui_pin_opts * opts)"
   ([ui pin-id label] (node-output ui pin-id label nil))
   ([ui pin-id label opts]
-   (impl/with-call [wb] (raw/cui_node_output_ex ui (impl/arg-val [:scalar :int] pin-id) (impl/str-arg label) (impl/in-ptr! wb [:struct :cui_pin_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_node_output_ex ui (impl/arg-val [:scalar :int] pin-id) (impl/str-ptr label) (impl/in-ptr! wb [:struct :cui_pin_opts] opts)))))
 
 (defn node-content-begin
   "void cui_node_content_begin(cui_ctx * ui)"
@@ -2148,7 +2148,7 @@
   "void cui_menu_bar_begin(cui_ctx * ui, const char * id, const cui_menu_bar_opts * opts)"
   ([ui id] (menu-bar-begin ui id nil))
   ([ui id opts]
-   (impl/with-call [wb] (raw/cui_menu_bar_begin ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_menu_bar_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_menu_bar_begin ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_menu_bar_opts] opts)))))
 
 (defn menu-bar-end
   "void cui_menu_bar_end(cui_ctx * ui)"
@@ -2159,7 +2159,7 @@
   "bool cui_menu_bar_menu_begin(cui_ctx * ui, const char * label, const cui_menu_bar_menu_opts * opts)"
   ([ui label] (menu-bar-menu-begin ui label nil))
   ([ui label opts]
-   (impl/with-call [wb] (raw/cui_menu_bar_menu_begin ui (impl/str-arg label) (impl/in-ptr! wb [:struct :cui_menu_bar_menu_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_menu_bar_menu_begin ui (impl/str-ptr label) (impl/in-ptr! wb [:struct :cui_menu_bar_menu_opts] opts)))))
 
 (defn menu-bar-menu-end
   "void cui_menu_bar_menu_end(cui_ctx * ui)"
@@ -2170,7 +2170,7 @@
   "void cui_toolbar_begin(cui_ctx * ui, const char * id, const cui_toolbar_opts * opts)"
   ([ui id] (toolbar-begin ui id nil))
   ([ui id opts]
-   (impl/with-call [wb] (raw/cui_toolbar_begin ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_toolbar_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_toolbar_begin ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_toolbar_opts] opts)))))
 
 (defn toolbar-end
   "void cui_toolbar_end(cui_ctx * ui)"
@@ -2181,7 +2181,7 @@
   "bool cui_toolbar_button_ex(cui_ctx * ui, const char * icon, const cui_tool_opts * opts)"
   ([ui icon] (toolbar-button ui icon nil))
   ([ui icon opts]
-   (impl/with-call [wb] (raw/cui_toolbar_button_ex ui (impl/str-arg icon) (impl/in-ptr! wb [:struct :cui_tool_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_toolbar_button_ex ui (impl/str-ptr icon) (impl/in-ptr! wb [:struct :cui_tool_opts] opts)))))
 
 (defn toolbar-separator
   "void cui_toolbar_separator(cui_ctx * ui)"
@@ -2207,19 +2207,19 @@
   "bool cui_toolbar_radio_ex(cui_ctx * ui, const char * id, const char * const * icons, int count, int * index, const cui_toolbar_radio_opts * opts)"
   ([ui id icons index] (toolbar-radio ui id icons index nil))
   ([ui id icons index opts]
-   (impl/with-call [wb] (raw/cui_toolbar_radio_ex ui (impl/str-arg id) (impl/strs-ptr icons) (count icons) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_toolbar_radio_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_toolbar_radio_ex ui (impl/str-ptr id) (impl/strs-ptr icons) (count icons) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_toolbar_radio_opts] opts)))))
 
 (defn toolbar-primary
   "bool cui_toolbar_primary_ex(cui_ctx * ui, const char * icon, const cui_tool_opts * opts)"
   ([ui icon] (toolbar-primary ui icon nil))
   ([ui icon opts]
-   (impl/with-call [wb] (raw/cui_toolbar_primary_ex ui (impl/str-arg icon) (impl/in-ptr! wb [:struct :cui_tool_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_toolbar_primary_ex ui (impl/str-ptr icon) (impl/in-ptr! wb [:struct :cui_tool_opts] opts)))))
 
 (defn toolbar-cycle
   "bool cui_toolbar_cycle_ex(cui_ctx * ui, const char * id, const char * const * items, int count, int * index, const cui_tool_opts * opts)"
   ([ui id items index] (toolbar-cycle ui id items index nil))
   ([ui id items index opts]
-   (impl/with-call [wb] (raw/cui_toolbar_cycle_ex ui (impl/str-arg id) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_tool_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_toolbar_cycle_ex ui (impl/str-ptr id) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_tool_opts] opts)))))
 
 (defn flyout-mark
   "void cui_flyout_mark(cui_ctx * ui)"
@@ -2230,7 +2230,7 @@
   "void cui_status_bar_begin(cui_ctx * ui, const char * id, const cui_status_bar_opts * opts)"
   ([ui id] (status-bar-begin ui id nil))
   ([ui id opts]
-   (impl/with-call [wb] (raw/cui_status_bar_begin ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_status_bar_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_status_bar_begin ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_status_bar_opts] opts)))))
 
 (defn status-bar-end
   "void cui_status_bar_end(cui_ctx * ui)"
@@ -2246,13 +2246,13 @@
   "void cui_status_bar_text_ex(cui_ctx * ui, const char * text, const cui_status_item_opts * opts)"
   ([ui text] (status-bar-text ui text nil))
   ([ui text opts]
-   (impl/with-call [wb] (raw/cui_status_bar_text_ex ui (impl/str-arg text) (impl/in-ptr! wb [:struct :cui_status_item_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_status_bar_text_ex ui (impl/str-ptr text) (impl/in-ptr! wb [:struct :cui_status_item_opts] opts)))))
 
 (defn status-bar-item
   "bool cui_status_bar_item_ex(cui_ctx * ui, const char * label, const cui_status_item_opts * opts)"
   ([ui label] (status-bar-item ui label nil))
   ([ui label opts]
-   (impl/with-call [wb] (raw/cui_status_bar_item_ex ui (impl/str-arg label) (impl/in-ptr! wb [:struct :cui_status_item_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_status_bar_item_ex ui (impl/str-ptr label) (impl/in-ptr! wb [:struct :cui_status_item_opts] opts)))))
 
 (defn status-bar-progress
   "void cui_status_bar_progress_ex(cui_ctx * ui, float value, const cui_status_progress_opts * opts)"
@@ -2264,13 +2264,13 @@
   "cui_doc_tabs_result cui_doc_tabs_ex(cui_ctx * ui, const char * id, const cui_doc_tab * tabs, int count, int * selected, const cui_doc_tabs_opts * opts)"
   ([ui id tabs selected] (doc-tabs ui id tabs selected nil))
   ([ui id tabs selected opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_doc_tabs_result)] (raw/cui_doc_tabs_ex dst ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_doc_tab] tabs) (count tabs) (impl/ref-ptr! wb [:scalar :int] selected) (impl/in-ptr! wb [:struct :cui_doc_tabs_opts] opts)) (impl/read-struct :cui_doc_tabs_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_doc_tabs_result)] (raw/cui_doc_tabs_ex dst ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_doc_tab] tabs) (count tabs) (impl/ref-ptr! wb [:scalar :int] selected) (impl/in-ptr! wb [:struct :cui_doc_tabs_opts] opts)) (impl/read-struct :cui_doc_tabs_result dst)))))
 
 (defn dockspace-begin
   "void cui_dockspace_begin_ex(cui_ctx * ui, const char * id, const cui_dockspace_opts * opts)"
   ([ui id] (dockspace-begin ui id nil))
   ([ui id opts]
-   (impl/with-call [wb] (raw/cui_dockspace_begin_ex ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_dockspace_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_dockspace_begin_ex ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_dockspace_opts] opts)))))
 
 (defn dockspace-end
   "void cui_dockspace_end(cui_ctx * ui)"
@@ -2281,7 +2281,7 @@
   "bool cui_dock_panel_begin_ex(cui_ctx * ui, const char * title, bool * open, const cui_dock_panel_opts * opts)"
   ([ui title open] (dock-panel-begin ui title open nil))
   ([ui title open opts]
-   (impl/with-call [wb] (raw/cui_dock_panel_begin_ex ui (impl/str-arg title) (impl/ref-ptr! wb [:bool] open) (impl/in-ptr! wb [:struct :cui_dock_panel_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_dock_panel_begin_ex ui (impl/str-ptr title) (impl/ref-ptr! wb [:bool] open) (impl/in-ptr! wb [:struct :cui_dock_panel_opts] opts)))))
 
 (defn dock-panel-end
   "void cui_dock_panel_end(cui_ctx * ui)"
@@ -2291,18 +2291,18 @@
 (defn dock-save
   "size_t cui_dock_save(cui_ctx * ui, const char * id, char * buf, size_t cap)"
   [ui id buf]
-  (impl/with-call [wb] (raw/cui_dock_save ui (impl/str-arg id) (impl/buf-ptr! wb buf) (impl/buf-cap buf))))
+  (impl/with-call [wb] (raw/cui_dock_save ui (impl/str-ptr id) (impl/buf-ptr! wb buf) (impl/buf-cap buf))))
 
 (defn dock-load
   "bool cui_dock_load(cui_ctx * ui, const char * id, const char * text)"
   [ui id text]
-  (raw/cui_dock_load ui (impl/str-arg id) (impl/str-arg text)))
+  (raw/cui_dock_load ui (impl/str-ptr id) (impl/str-ptr text)))
 
 (defn inspector-begin
   "bool cui_inspector_begin_ex(cui_ctx * ui, const char * id, const cui_inspector_opts * opts)"
   ([ui id] (inspector-begin ui id nil))
   ([ui id opts]
-   (impl/with-call [wb] (raw/cui_inspector_begin_ex ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_inspector_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_inspector_begin_ex ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_inspector_opts] opts)))))
 
 (defn inspector-end
   "void cui_inspector_end(cui_ctx * ui)"
@@ -2312,49 +2312,49 @@
 (defn inspector-group
   "bool cui_inspector_group(cui_ctx * ui, const char * title, bool * open)"
   [ui title open]
-  (impl/with-call [wb] (raw/cui_inspector_group ui (impl/str-arg title) (impl/ref-ptr! wb [:bool] open))))
+  (impl/with-call [wb] (raw/cui_inspector_group ui (impl/str-ptr title) (impl/ref-ptr! wb [:bool] open))))
 
 (defn prop-float
   "bool cui_prop_float_ex(cui_ctx * ui, const char * label, float * value, const cui_prop_opts * opts)"
   ([ui label value] (prop-float ui label value nil))
   ([ui label value opts]
-   (impl/with-call [wb] (raw/cui_prop_float_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:scalar :float] value) (impl/in-ptr! wb [:struct :cui_prop_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_prop_float_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:scalar :float] value) (impl/in-ptr! wb [:struct :cui_prop_opts] opts)))))
 
 (defn prop-int
   "bool cui_prop_int_ex(cui_ctx * ui, const char * label, int * value, const cui_prop_opts * opts)"
   ([ui label value] (prop-int ui label value nil))
   ([ui label value opts]
-   (impl/with-call [wb] (raw/cui_prop_int_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:scalar :int] value) (impl/in-ptr! wb [:struct :cui_prop_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_prop_int_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:scalar :int] value) (impl/in-ptr! wb [:struct :cui_prop_opts] opts)))))
 
 (defn prop-text
   "bool cui_prop_text_ex(cui_ctx * ui, const char * label, char * buf, size_t cap, const cui_prop_opts * opts)"
   ([ui label buf] (prop-text ui label buf nil))
   ([ui label buf opts]
-   (impl/with-call [wb] (raw/cui_prop_text_ex ui (impl/str-arg label) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_prop_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_prop_text_ex ui (impl/str-ptr label) (impl/buf-ptr! wb buf) (impl/buf-cap buf) (impl/in-ptr! wb [:struct :cui_prop_opts] opts)))))
 
 (defn prop-bool
   "bool cui_prop_bool_ex(cui_ctx * ui, const char * label, bool * value, const cui_prop_opts * opts)"
   ([ui label value] (prop-bool ui label value nil))
   ([ui label value opts]
-   (impl/with-call [wb] (raw/cui_prop_bool_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:bool] value) (impl/in-ptr! wb [:struct :cui_prop_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_prop_bool_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:bool] value) (impl/in-ptr! wb [:struct :cui_prop_opts] opts)))))
 
 (defn prop-enum
   "bool cui_prop_enum_ex(cui_ctx * ui, const char * label, const char * const * items, int count, int * index, const cui_prop_opts * opts)"
   ([ui label items index] (prop-enum ui label items index nil))
   ([ui label items index opts]
-   (impl/with-call [wb] (raw/cui_prop_enum_ex ui (impl/str-arg label) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_prop_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_prop_enum_ex ui (impl/str-ptr label) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_prop_opts] opts)))))
 
 (defn prop-color
   "bool cui_prop_color_ex(cui_ctx * ui, const char * label, cui_color * value, const cui_prop_opts * opts)"
   ([ui label value] (prop-color ui label value nil))
   ([ui label value opts]
-   (impl/with-call [wb] (raw/cui_prop_color_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:struct :cui_color] value) (impl/in-ptr! wb [:struct :cui_prop_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_prop_color_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:struct :cui_color] value) (impl/in-ptr! wb [:struct :cui_prop_opts] opts)))))
 
 (defn prop-vec
   "bool cui_prop_vec_ex(cui_ctx * ui, const char * label, float * value, int components, const cui_prop_opts * opts)"
   ([ui label value] (prop-vec ui label value nil))
   ([ui label value opts]
-   (impl/with-call [wb] (raw/cui_prop_vec_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:scalar :float] value) (impl/ref-count value) (impl/in-ptr! wb [:struct :cui_prop_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_prop_vec_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:scalar :float] value) (impl/ref-count value) (impl/in-ptr! wb [:struct :cui_prop_opts] opts)))))
 
 (defn log-init
   "void cui_log_init(cui_log_buffer * buf, cui_log_line * lines, int line_cap, char * text, size_t text_cap)"
@@ -2369,7 +2369,7 @@
 (defn log-append-text
   "void cui_log_append_text(cui_log_buffer * buf, cui_log_level level, double time, const char * text, int len)"
   [buf level time* text]
-  (raw/cui_log_append_text buf (impl/arg-val [:enum :cui_log_level] level) (impl/arg-val [:scalar :double] time*) (impl/str-arg text) (impl/utf8-len text)))
+  (raw/cui_log_append_text buf (impl/arg-val [:enum :cui_log_level] level) (impl/arg-val [:scalar :double] time*) (impl/str-ptr text) (impl/utf8-len text)))
 
 (defn log-clear
   "void cui_log_clear(cui_log_buffer * buf)"
@@ -2385,7 +2385,7 @@
   "void cui_log_view_ex(cui_ctx * ui, const char * id, cui_log_buffer * buf, const cui_log_view_opts * opts)"
   ([ui id buf] (log-view ui id buf nil))
   ([ui id buf opts]
-   (impl/with-call [wb] (raw/cui_log_view_ex ui (impl/str-arg id) buf (impl/in-ptr! wb [:struct :cui_log_view_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_log_view_ex ui (impl/str-ptr id) buf (impl/in-ptr! wb [:struct :cui_log_view_opts] opts)))))
 
 (defn terminal-init
   "void cui_terminal_init(cui_terminal_buffer * t, char * text, size_t text_cap, cui_terminal_line * lines, int line_cap)"
@@ -2395,7 +2395,7 @@
 (defn terminal-write
   "void cui_terminal_write(cui_terminal_buffer * t, const char * data, int len)"
   [t data]
-  (impl/with-call [wb] (raw/cui_terminal_write (impl/ref-ptr! wb [:struct :cui_terminal_buffer] t) (impl/str-arg data) (impl/utf8-len data))))
+  (impl/with-call [wb] (raw/cui_terminal_write (impl/ref-ptr! wb [:struct :cui_terminal_buffer] t) (impl/str-ptr data) (impl/utf8-len data))))
 
 (defn terminal-printf
   "void cui_terminal_printf(cui_terminal_buffer * t, const char * fmt, ...)"
@@ -2411,12 +2411,12 @@
   "cui_terminal_result cui_terminal_ex(cui_ctx * ui, const char * id, cui_terminal_buffer * t, const cui_terminal_opts * opts)"
   ([ui id t] (terminal ui id t nil))
   ([ui id t opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_terminal_result)] (raw/cui_terminal_ex dst ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_terminal_buffer] t) (impl/in-ptr! wb [:struct :cui_terminal_opts] opts)) (impl/read-struct :cui_terminal_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_terminal_result)] (raw/cui_terminal_ex dst ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_terminal_buffer] t) (impl/in-ptr! wb [:struct :cui_terminal_opts] opts)) (impl/read-struct :cui_terminal_result dst)))))
 
 (defn emoji-font-load-file
   "bool cui_emoji_font_load_file(cui_ctx * ui, const char * path)"
   [ui path]
-  (raw/cui_emoji_font_load_file ui (impl/str-arg path)))
+  (raw/cui_emoji_font_load_file ui (impl/str-ptr path)))
 
 (defn emoji-font-load-memory
   "bool cui_emoji_font_load_memory(cui_ctx * ui, const void * data, size_t size, bool copy)"
@@ -2431,40 +2431,40 @@
 (defn emoji-supported
   "bool cui_emoji_supported(cui_ctx * ui, const char * utf8, int len)"
   [ui utf8]
-  (raw/cui_emoji_supported ui (impl/str-arg utf8) (impl/utf8-len utf8)))
+  (raw/cui_emoji_supported ui (impl/str-ptr utf8) (impl/utf8-len utf8)))
 
 (defn draw-emoji
   "void cui_draw_emoji(cui_ctx * ui, const char * utf8, int len, cui_rect r)"
   [ui utf8 r]
-  (impl/with-call [wb] (raw/cui_draw_emoji ui (impl/str-arg utf8) (impl/utf8-len utf8) (impl/in-ptr! wb [:struct :cui_rect] r))))
+  (impl/with-call [wb] (raw/cui_draw_emoji ui (impl/str-ptr utf8) (impl/utf8-len utf8) (impl/in-ptr! wb [:struct :cui_rect] r))))
 
 (defn emoji
   "void cui_emoji(cui_ctx * ui, const char * utf8, float size)"
   [ui utf8 size]
-  (raw/cui_emoji ui (impl/str-arg utf8) (impl/arg-val [:scalar :float] size)))
+  (raw/cui_emoji ui (impl/str-ptr utf8) (impl/arg-val [:scalar :float] size)))
 
 (defn emoji-picker
   "const char * cui_emoji_picker_ex(cui_ctx * ui, const char * id, const cui_emoji_picker_opts * opts)"
   ([ui id] (emoji-picker ui id nil))
   ([ui id opts]
-   (impl/with-call [wb] (raw/cui_emoji_picker_ex ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_emoji_picker_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_emoji_picker_ex ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_emoji_picker_opts] opts)))))
 
 (defn hex-view
   "cui_hex_result cui_hex_view_ex(cui_ctx * ui, const char * id, const uint8_t * data, size_t size, cui_hex_selection * sel, const cui_hex_view_opts * opts)"
   ([ui id data size sel] (hex-view ui id data size sel nil))
   ([ui id data size sel opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_hex_result)] (raw/cui_hex_view_ex dst ui (impl/str-arg id) (impl/in-ptr! wb [:scalar :uint8] data) (impl/arg-val [:scalar :size_t] size) (impl/ref-ptr! wb [:struct :cui_hex_selection] sel) (impl/in-ptr! wb [:struct :cui_hex_view_opts] opts)) (impl/read-struct :cui_hex_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_hex_result)] (raw/cui_hex_view_ex dst ui (impl/str-ptr id) (impl/in-ptr! wb [:scalar :uint8] data) (impl/arg-val [:scalar :size_t] size) (impl/ref-ptr! wb [:struct :cui_hex_selection] sel) (impl/in-ptr! wb [:struct :cui_hex_view_opts] opts)) (impl/read-struct :cui_hex_result dst)))))
 
 (defn hex-view-goto
   "void cui_hex_view_goto(cui_ctx * ui, const char * id, size_t offset)"
   [ui id offset]
-  (raw/cui_hex_view_goto ui (impl/str-arg id) (impl/arg-val [:scalar :size_t] offset)))
+  (raw/cui_hex_view_goto ui (impl/str-ptr id) (impl/arg-val [:scalar :size_t] offset)))
 
 (defn flame-graph
   "cui_flame_result cui_flame_graph_ex(cui_ctx * ui, const char * id, const cui_flame_span * spans, int count, cui_flame_view * view, int * selected, const cui_flame_opts * opts)"
   ([ui id spans view selected] (flame-graph ui id spans view selected nil))
   ([ui id spans view selected opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_flame_result)] (raw/cui_flame_graph_ex dst ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_flame_span] spans) (count spans) (impl/ref-ptr! wb [:struct :cui_flame_view] view) (impl/ref-ptr! wb [:scalar :int] selected) (impl/in-ptr! wb [:struct :cui_flame_opts] opts)) (impl/read-struct :cui_flame_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_flame_result)] (raw/cui_flame_graph_ex dst ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_flame_span] spans) (count spans) (impl/ref-ptr! wb [:struct :cui_flame_view] view) (impl/ref-ptr! wb [:scalar :int] selected) (impl/in-ptr! wb [:struct :cui_flame_opts] opts)) (impl/read-struct :cui_flame_result dst)))))
 
 (defn flame-sort
   "void cui_flame_sort(cui_flame_span * spans, int count)"
@@ -2480,7 +2480,7 @@
   "cui_curve_result cui_curve_editor_ex(cui_ctx * ui, const char * id, cui_curve_key * keys, int * count, int capacity, const cui_curve_opts * opts)"
   ([ui id keys* count* capacity] (curve-editor ui id keys* count* capacity nil))
   ([ui id keys* count* capacity opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_curve_result)] (raw/cui_curve_editor_ex dst ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_curve_key] keys*) (impl/ref-ptr! wb [:scalar :int] count*) (impl/arg-val [:scalar :int] capacity) (impl/in-ptr! wb [:struct :cui_curve_opts] opts)) (impl/read-struct :cui_curve_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_curve_result)] (raw/cui_curve_editor_ex dst ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_curve_key] keys*) (impl/ref-ptr! wb [:scalar :int] count*) (impl/arg-val [:scalar :int] capacity) (impl/in-ptr! wb [:struct :cui_curve_opts] opts)) (impl/read-struct :cui_curve_result dst)))))
 
 (defn curve-eval
   "float cui_curve_eval(const cui_curve_key * keys, int count, float x)"
@@ -2491,7 +2491,7 @@
   "cui_gradient_result cui_gradient_editor_ex(cui_ctx * ui, const char * id, cui_gradient_stop * stops, int * count, int capacity, const cui_gradient_opts * opts)"
   ([ui id stops count* capacity] (gradient-editor ui id stops count* capacity nil))
   ([ui id stops count* capacity opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_gradient_result)] (raw/cui_gradient_editor_ex dst ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_gradient_stop] stops) (impl/ref-ptr! wb [:scalar :int] count*) (impl/arg-val [:scalar :int] capacity) (impl/in-ptr! wb [:struct :cui_gradient_opts] opts)) (impl/read-struct :cui_gradient_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_gradient_result)] (raw/cui_gradient_editor_ex dst ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_gradient_stop] stops) (impl/ref-ptr! wb [:scalar :int] count*) (impl/arg-val [:scalar :int] capacity) (impl/in-ptr! wb [:struct :cui_gradient_opts] opts)) (impl/read-struct :cui_gradient_result dst)))))
 
 (defn gradient-eval
   "cui_color cui_gradient_eval(const cui_gradient_stop * stops, int count, float t)"
@@ -2502,79 +2502,79 @@
   "bool cui_status_tag_ex(cui_ctx * ui, const char * label, cui_tag_status status, const cui_status_tag_opts * opts)"
   ([ui label status] (status-tag ui label status nil))
   ([ui label status opts]
-   (impl/with-call [wb] (raw/cui_status_tag_ex ui (impl/str-arg label) (impl/arg-val [:enum :cui_tag_status] status) (impl/in-ptr! wb [:struct :cui_status_tag_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_status_tag_ex ui (impl/str-ptr label) (impl/arg-val [:enum :cui_tag_status] status) (impl/in-ptr! wb [:struct :cui_status_tag_opts] opts)))))
 
 (defn ratio-slider
   "bool cui_ratio_slider_ex(cui_ctx * ui, const char * first, const char * second, float * ratio, const cui_ratio_slider_opts * opts)"
   ([ui first* second* ratio] (ratio-slider ui first* second* ratio nil))
   ([ui first* second* ratio opts]
-   (impl/with-call [wb] (raw/cui_ratio_slider_ex ui (impl/str-arg first*) (impl/str-arg second*) (impl/ref-ptr! wb [:scalar :float] ratio) (impl/in-ptr! wb [:struct :cui_ratio_slider_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_ratio_slider_ex ui (impl/str-ptr first*) (impl/str-ptr second*) (impl/ref-ptr! wb [:scalar :float] ratio) (impl/in-ptr! wb [:struct :cui_ratio_slider_opts] opts)))))
 
 (defn gradient-slider
   "int cui_gradient_slider_ex(cui_ctx * ui, const char * label, float * value, float min, float max, const cui_gradient_slider_opts * opts)"
   ([ui label value min* max*] (gradient-slider ui label value min* max* nil))
   ([ui label value min* max* opts]
-   (impl/with-call [wb] (raw/cui_gradient_slider_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:scalar :float] value) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_gradient_slider_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_gradient_slider_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:scalar :float] value) (impl/arg-val [:scalar :float] min*) (impl/arg-val [:scalar :float] max*) (impl/in-ptr! wb [:struct :cui_gradient_slider_opts] opts)))))
 
 (defn step-slider
   "int cui_step_slider_ex(cui_ctx * ui, const char * label, int * value, int min, int max, const cui_step_slider_opts * opts)"
   ([ui label value min* max*] (step-slider ui label value min* max* nil))
   ([ui label value min* max* opts]
-   (impl/with-call [wb] (raw/cui_step_slider_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:scalar :int] value) (impl/arg-val [:scalar :int] min*) (impl/arg-val [:scalar :int] max*) (impl/in-ptr! wb [:struct :cui_step_slider_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_step_slider_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:scalar :int] value) (impl/arg-val [:scalar :int] min*) (impl/arg-val [:scalar :int] max*) (impl/in-ptr! wb [:struct :cui_step_slider_opts] opts)))))
 
 (defn palette-strip
   "int cui_palette_strip_ex(cui_ctx * ui, const char * label, cui_color * colors, bool * locked, int count, const cui_palette_strip_opts * opts)"
   ([ui label colors locked] (palette-strip ui label colors locked nil))
   ([ui label colors locked opts]
-   (impl/with-call [wb] (raw/cui_palette_strip_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:struct :cui_color] colors) (impl/ref-ptr! wb [:bool] locked) (impl/ref-count locked) (impl/in-ptr! wb [:struct :cui_palette_strip_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_palette_strip_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:struct :cui_color] colors) (impl/ref-ptr! wb [:bool] locked) (impl/ref-count locked) (impl/in-ptr! wb [:struct :cui_palette_strip_opts] opts)))))
 
 (defn aspect-picker
   "bool cui_aspect_picker_ex(cui_ctx * ui, const char * label, int * index, const cui_aspect_picker_opts * opts)"
   ([ui label index] (aspect-picker ui label index nil))
   ([ui label index opts]
-   (impl/with-call [wb] (raw/cui_aspect_picker_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_aspect_picker_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_aspect_picker_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:scalar :int] index) (impl/in-ptr! wb [:struct :cui_aspect_picker_opts] opts)))))
 
 (defn option-action
   "int cui_option_action_ex(cui_ctx * ui, const char * label, const char * const * items, int count, int * index, const char * icon, const cui_option_action_opts * opts)"
   ([ui label items index icon] (option-action ui label items index icon nil))
   ([ui label items index icon opts]
-   (impl/with-call [wb] (raw/cui_option_action_ex ui (impl/str-arg label) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index) (impl/str-arg icon) (impl/in-ptr! wb [:struct :cui_option_action_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_option_action_ex ui (impl/str-ptr label) (impl/strs-ptr items) (count items) (impl/ref-ptr! wb [:scalar :int] index) (impl/str-ptr icon) (impl/in-ptr! wb [:struct :cui_option_action_opts] opts)))))
 
 (defn seed-field
   "int cui_seed_field_ex(cui_ctx * ui, const char * label, uint32_t * seed, bool * locked, const cui_seed_field_opts * opts)"
   ([ui label seed locked] (seed-field ui label seed locked nil))
   ([ui label seed locked opts]
-   (impl/with-call [wb] (raw/cui_seed_field_ex ui (impl/str-arg label) (impl/ref-ptr! wb [:scalar :uint32] seed) (impl/ref-ptr! wb [:bool] locked) (impl/in-ptr! wb [:struct :cui_seed_field_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_seed_field_ex ui (impl/str-ptr label) (impl/ref-ptr! wb [:scalar :uint32] seed) (impl/ref-ptr! wb [:bool] locked) (impl/in-ptr! wb [:struct :cui_seed_field_opts] opts)))))
 
 (defn timeline-editor
   "cui_timeline_editor_result cui_timeline_editor_ex(cui_ctx * ui, const char * id, cui_timeline_track * tracks, int count, float * time, const cui_timeline_editor_opts * opts)"
   ([ui id tracks time*] (timeline-editor ui id tracks time* nil))
   ([ui id tracks time* opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_timeline_editor_result)] (raw/cui_timeline_editor_ex dst ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_timeline_track] tracks) (impl/ref-count tracks) (impl/ref-ptr! wb [:scalar :float] time*) (impl/in-ptr! wb [:struct :cui_timeline_editor_opts] opts)) (impl/read-struct :cui_timeline_editor_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_timeline_editor_result)] (raw/cui_timeline_editor_ex dst ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_timeline_track] tracks) (impl/ref-count tracks) (impl/ref-ptr! wb [:scalar :float] time*) (impl/in-ptr! wb [:struct :cui_timeline_editor_opts] opts)) (impl/read-struct :cui_timeline_editor_result dst)))))
 
 (defn kv-editor
   "bool cui_kv_editor_ex(cui_ctx * ui, const char * id, cui_kv_pair * pairs, int * count, int capacity, const cui_kv_editor_opts * opts)"
   ([ui id pairs count* capacity] (kv-editor ui id pairs count* capacity nil))
   ([ui id pairs count* capacity opts]
-   (impl/with-call [wb] (raw/cui_kv_editor_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_kv_pair] pairs) (impl/ref-ptr! wb [:scalar :int] count*) (impl/arg-val [:scalar :int] capacity) (impl/in-ptr! wb [:struct :cui_kv_editor_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_kv_editor_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_kv_pair] pairs) (impl/ref-ptr! wb [:scalar :int] count*) (impl/arg-val [:scalar :int] capacity) (impl/in-ptr! wb [:struct :cui_kv_editor_opts] opts)))))
 
 (defn problems
   "cui_problems_result cui_problems_ex(cui_ctx * ui, const char * id, const cui_diagnostic * diags, int count, const cui_problems_opts * opts)"
   ([ui id diags] (problems ui id diags nil))
   ([ui id diags opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_problems_result)] (raw/cui_problems_ex dst ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_diagnostic] diags) (count diags) (impl/in-ptr! wb [:struct :cui_problems_opts] opts)) (impl/read-struct :cui_problems_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_problems_result)] (raw/cui_problems_ex dst ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_diagnostic] diags) (count diags) (impl/in-ptr! wb [:struct :cui_problems_opts] opts)) (impl/read-struct :cui_problems_result dst)))))
 
 (defn pipeline
   "cui_pipeline_result cui_pipeline_ex(cui_ctx * ui, const char * id, const char * const * stages, int stage_count, const cui_pipeline_job * jobs, int job_count, const cui_pipeline_opts * opts)"
   ([ui id stages jobs] (pipeline ui id stages jobs nil))
   ([ui id stages jobs opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_pipeline_result)] (raw/cui_pipeline_ex dst ui (impl/str-arg id) (impl/strs-ptr stages) (count stages) (impl/vec-ptr! wb [:struct :cui_pipeline_job] jobs) (count jobs) (impl/in-ptr! wb [:struct :cui_pipeline_opts] opts)) (impl/read-struct :cui_pipeline_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_pipeline_result)] (raw/cui_pipeline_ex dst ui (impl/str-ptr id) (impl/strs-ptr stages) (count stages) (impl/vec-ptr! wb [:struct :cui_pipeline_job] jobs) (count jobs) (impl/in-ptr! wb [:struct :cui_pipeline_opts] opts)) (impl/read-struct :cui_pipeline_result dst)))))
 
 (defn query-builder
   "bool cui_query_builder_ex(cui_ctx * ui, const char * id, const cui_query_field * fields, int field_count, cui_query_node * nodes, int * count, int capacity, const cui_query_opts * opts)"
   ([ui id fields nodes count* capacity] (query-builder ui id fields nodes count* capacity nil))
   ([ui id fields nodes count* capacity opts]
-   (impl/with-call [wb] (raw/cui_query_builder_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_query_field] fields) (count fields) (impl/ref-ptr! wb [:struct :cui_query_node] nodes) (impl/ref-ptr! wb [:scalar :int] count*) (impl/arg-val [:scalar :int] capacity) (impl/in-ptr! wb [:struct :cui_query_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_query_builder_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_query_field] fields) (count fields) (impl/ref-ptr! wb [:struct :cui_query_node] nodes) (impl/ref-ptr! wb [:scalar :int] count*) (impl/arg-val [:scalar :int] capacity) (impl/in-ptr! wb [:struct :cui_query_opts] opts)))))
 
 (defn query-op-name
   "const char * cui_query_op_name(cui_query_type type, int op)"
@@ -2595,47 +2595,47 @@
   "cui_schedule_result cui_schedule_picker_ex(cui_ctx * ui, const char * id, char * cron, size_t cap, const cui_schedule_opts * opts)"
   ([ui id cron] (schedule-picker ui id cron nil))
   ([ui id cron opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_schedule_result)] (raw/cui_schedule_picker_ex dst ui (impl/str-arg id) (impl/buf-ptr! wb cron) (impl/buf-cap cron) (impl/in-ptr! wb [:struct :cui_schedule_opts] opts)) (impl/read-struct :cui_schedule_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_schedule_result)] (raw/cui_schedule_picker_ex dst ui (impl/str-ptr id) (impl/buf-ptr! wb cron) (impl/buf-cap cron) (impl/in-ptr! wb [:struct :cui_schedule_opts] opts)) (impl/read-struct :cui_schedule_result dst)))))
 
 (defn cron-next
   "bool cui_cron_next(const char * cron, int64_t after, int utc_offset, int64_t * next)"
   [cron after utc-offset next*]
-  (impl/with-call [wb] (raw/cui_cron_next (impl/str-arg cron) (impl/arg-val [:scalar :int64] after) (impl/arg-val [:scalar :int] utc-offset) (impl/ref-ptr! wb [:scalar :int64] next*))))
+  (impl/with-call [wb] (raw/cui_cron_next (impl/str-ptr cron) (impl/arg-val [:scalar :int64] after) (impl/arg-val [:scalar :int] utc-offset) (impl/ref-ptr! wb [:scalar :int64] next*))))
 
 (defn cron-describe
   "const char * cui_cron_describe(cui_ctx * ui, const char * cron)"
   [ui cron]
-  (raw/cui_cron_describe ui (impl/str-arg cron)))
+  (raw/cui_cron_describe ui (impl/str-ptr cron)))
 
 (defn keymap
   "cui_keymap_result cui_keymap_ex(cui_ctx * ui, const char * id, const cui_keymap_binding * bindings, int count, const cui_keymap_opts * opts)"
   ([ui id bindings] (keymap ui id bindings nil))
   ([ui id bindings opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_keymap_result)] (raw/cui_keymap_ex dst ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_keymap_binding] bindings) (count bindings) (impl/in-ptr! wb [:struct :cui_keymap_opts] opts)) (impl/read-struct :cui_keymap_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_keymap_result)] (raw/cui_keymap_ex dst ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_keymap_binding] bindings) (count bindings) (impl/in-ptr! wb [:struct :cui_keymap_opts] opts)) (impl/read-struct :cui_keymap_result dst)))))
 
 (defn commit-graph
   "cui_commit_graph_result cui_commit_graph_ex(cui_ctx * ui, const char * id, const cui_commit * commits, int count, const cui_commit_graph_opts * opts)"
   ([ui id commits] (commit-graph ui id commits nil))
   ([ui id commits opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_commit_graph_result)] (raw/cui_commit_graph_ex dst ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_commit] commits) (count commits) (impl/in-ptr! wb [:struct :cui_commit_graph_opts] opts)) (impl/read-struct :cui_commit_graph_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_commit_graph_result)] (raw/cui_commit_graph_ex dst ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_commit] commits) (count commits) (impl/in-ptr! wb [:struct :cui_commit_graph_opts] opts)) (impl/read-struct :cui_commit_graph_result dst)))))
 
 (defn graph-view
   "cui_graph_result cui_graph_view_ex(cui_ctx * ui, const char * id, const cui_graph_node * nodes, int node_count, const cui_graph_edge * edges, int edge_count, const cui_graph_opts * opts)"
   ([ui id nodes edges] (graph-view ui id nodes edges nil))
   ([ui id nodes edges opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_graph_result)] (raw/cui_graph_view_ex dst ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_graph_node] nodes) (count nodes) (impl/vec-ptr! wb [:struct :cui_graph_edge] edges) (count edges) (impl/in-ptr! wb [:struct :cui_graph_opts] opts)) (impl/read-struct :cui_graph_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_graph_result)] (raw/cui_graph_view_ex dst ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_graph_node] nodes) (count nodes) (impl/vec-ptr! wb [:struct :cui_graph_edge] edges) (count edges) (impl/in-ptr! wb [:struct :cui_graph_opts] opts)) (impl/read-struct :cui_graph_result dst)))))
 
 (defn waterfall
   "cui_waterfall_result cui_waterfall_ex(cui_ctx * ui, const char * id, const cui_net_request * requests, int count, const cui_waterfall_opts * opts)"
   ([ui id requests] (waterfall ui id requests nil))
   ([ui id requests opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_waterfall_result)] (raw/cui_waterfall_ex dst ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_net_request] requests) (count requests) (impl/in-ptr! wb [:struct :cui_waterfall_opts] opts)) (impl/read-struct :cui_waterfall_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_waterfall_result)] (raw/cui_waterfall_ex dst ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_net_request] requests) (count requests) (impl/in-ptr! wb [:struct :cui_waterfall_opts] opts)) (impl/read-struct :cui_waterfall_result dst)))))
 
 (defn trace-view
   "cui_trace_result cui_trace_view_ex(cui_ctx * ui, const char * id, cui_trace_track * tracks, int track_count, const cui_trace_span * spans, int span_count, cui_trace_view * view, int * selected, const cui_trace_opts * opts)"
   ([ui id tracks spans view selected] (trace-view ui id tracks spans view selected nil))
   ([ui id tracks spans view selected opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_trace_result)] (raw/cui_trace_view_ex dst ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_trace_track] tracks) (impl/ref-count tracks) (impl/vec-ptr! wb [:struct :cui_trace_span] spans) (count spans) (impl/ref-ptr! wb [:struct :cui_trace_view] view) (impl/ref-ptr! wb [:scalar :int] selected) (impl/in-ptr! wb [:struct :cui_trace_opts] opts)) (impl/read-struct :cui_trace_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_trace_result)] (raw/cui_trace_view_ex dst ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_trace_track] tracks) (impl/ref-count tracks) (impl/vec-ptr! wb [:struct :cui_trace_span] spans) (count spans) (impl/ref-ptr! wb [:struct :cui_trace_view] view) (impl/ref-ptr! wb [:scalar :int] selected) (impl/in-ptr! wb [:struct :cui_trace_opts] opts)) (impl/read-struct :cui_trace_result dst)))))
 
 (defn trace-sort
   "void cui_trace_sort(cui_trace_span * spans, int count)"
@@ -2645,31 +2645,31 @@
 (defn regex-search
   "int cui_regex_search(const char * pattern, int flags, const char * text, int len, int from, cui_regex_match * m, const char * * error)"
   [pattern flags text from m error]
-  (impl/with-call [wb] (raw/cui_regex_search (impl/str-arg pattern) (impl/arg-val [:scalar :int] flags) (impl/str-arg text) (impl/utf8-len text) (impl/arg-val [:scalar :int] from) (impl/ref-ptr! wb [:struct :cui_regex_match] m) error)))
+  (impl/with-call [wb] (raw/cui_regex_search (impl/str-ptr pattern) (impl/arg-val [:scalar :int] flags) (impl/str-ptr text) (impl/utf8-len text) (impl/arg-val [:scalar :int] from) (impl/ref-ptr! wb [:struct :cui_regex_match] m) error)))
 
 (defn regex-tester
   "cui_regex_tester_result cui_regex_tester_ex(cui_ctx * ui, const char * id, char * pattern, size_t pattern_cap, char * text, size_t text_cap, const cui_regex_tester_opts * opts)"
   ([ui id pattern text] (regex-tester ui id pattern text nil))
   ([ui id pattern text opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_regex_tester_result)] (raw/cui_regex_tester_ex dst ui (impl/str-arg id) (impl/buf-ptr! wb pattern) (impl/buf-cap pattern) (impl/buf-ptr! wb text) (impl/buf-cap text) (impl/in-ptr! wb [:struct :cui_regex_tester_opts] opts)) (impl/read-struct :cui_regex_tester_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_regex_tester_result)] (raw/cui_regex_tester_ex dst ui (impl/str-ptr id) (impl/buf-ptr! wb pattern) (impl/buf-cap pattern) (impl/buf-ptr! wb text) (impl/buf-cap text) (impl/in-ptr! wb [:struct :cui_regex_tester_opts] opts)) (impl/read-struct :cui_regex_tester_result dst)))))
 
 (defn test-explorer
   "cui_test_explorer_result cui_test_explorer_ex(cui_ctx * ui, const char * id, const cui_test_item * items, int count, const cui_test_explorer_opts * opts)"
   ([ui id items] (test-explorer ui id items nil))
   ([ui id items opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_test_explorer_result)] (raw/cui_test_explorer_ex dst ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_test_item] items) (count items) (impl/in-ptr! wb [:struct :cui_test_explorer_opts] opts)) (impl/read-struct :cui_test_explorer_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_test_explorer_result)] (raw/cui_test_explorer_ex dst ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_test_item] items) (count items) (impl/in-ptr! wb [:struct :cui_test_explorer_opts] opts)) (impl/read-struct :cui_test_explorer_result dst)))))
 
 (defn stack-trace
   "cui_stack_trace_result cui_stack_trace_ex(cui_ctx * ui, const char * id, const cui_stack_frame * frames, int count, const cui_stack_trace_opts * opts)"
   ([ui id frames] (stack-trace ui id frames nil))
   ([ui id frames opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_stack_trace_result)] (raw/cui_stack_trace_ex dst ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_stack_frame] frames) (count frames) (impl/in-ptr! wb [:struct :cui_stack_trace_opts] opts)) (impl/read-struct :cui_stack_trace_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_stack_trace_result)] (raw/cui_stack_trace_ex dst ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_stack_frame] frames) (count frames) (impl/in-ptr! wb [:struct :cui_stack_trace_opts] opts)) (impl/read-struct :cui_stack_trace_result dst)))))
 
 (defn request-bar
   "cui_request_bar_result cui_request_bar_ex(cui_ctx * ui, const char * id, int * method, char * url, size_t cap, const cui_request_bar_opts * opts)"
   ([ui id method url] (request-bar ui id method url nil))
   ([ui id method url opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_request_bar_result)] (raw/cui_request_bar_ex dst ui (impl/str-arg id) (impl/ref-ptr! wb [:scalar :int] method) (impl/buf-ptr! wb url) (impl/buf-cap url) (impl/in-ptr! wb [:struct :cui_request_bar_opts] opts)) (impl/read-struct :cui_request_bar_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_request_bar_result)] (raw/cui_request_bar_ex dst ui (impl/str-ptr id) (impl/ref-ptr! wb [:scalar :int] method) (impl/buf-ptr! wb url) (impl/buf-cap url) (impl/in-ptr! wb [:struct :cui_request_bar_opts] opts)) (impl/read-struct :cui_request_bar_result dst)))))
 
 (defn response-status
   "void cui_response_status(cui_ctx * ui, int status, double seconds, double bytes)"
@@ -2689,7 +2689,7 @@
 (defn url-params
   "int cui_url_params(const char * url, cui_kv_pair * pairs, int cap)"
   [url pairs]
-  (impl/with-call [wb] (raw/cui_url_params (impl/str-arg url) (impl/ref-ptr! wb [:struct :cui_kv_pair] pairs) (impl/ref-count pairs))))
+  (impl/with-call [wb] (raw/cui_url_params (impl/str-ptr url) (impl/ref-ptr! wb [:struct :cui_kv_pair] pairs) (impl/ref-count pairs))))
 
 (defn url-set-params
   "bool cui_url_set_params(char * url, size_t cap, const cui_kv_pair * pairs, int count)"
@@ -2700,79 +2700,79 @@
   "cui_uptime_result cui_uptime_ex(cui_ctx * ui, const char * id, const cui_uptime_service * services, int count, const cui_uptime_opts * opts)"
   ([ui id services] (uptime ui id services nil))
   ([ui id services opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_uptime_result)] (raw/cui_uptime_ex dst ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_uptime_service] services) (count services) (impl/in-ptr! wb [:struct :cui_uptime_opts] opts)) (impl/read-struct :cui_uptime_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_uptime_result)] (raw/cui_uptime_ex dst ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_uptime_service] services) (count services) (impl/in-ptr! wb [:struct :cui_uptime_opts] opts)) (impl/read-struct :cui_uptime_result dst)))))
 
 (defn time-histogram
   "cui_time_histogram_result cui_time_histogram_ex(cui_ctx * ui, const char * id, double start, double bucket_seconds, int buckets, const cui_histogram_series * series, int series_count, double * sel_start, double * sel_end, const cui_time_histogram_opts * opts)"
   ([ui id start bucket-seconds buckets series sel-start sel-end] (time-histogram ui id start bucket-seconds buckets series sel-start sel-end nil))
   ([ui id start bucket-seconds buckets series sel-start sel-end opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_time_histogram_result)] (raw/cui_time_histogram_ex dst ui (impl/str-arg id) (impl/arg-val [:scalar :double] start) (impl/arg-val [:scalar :double] bucket-seconds) (impl/arg-val [:scalar :int] buckets) (impl/vec-ptr! wb [:struct :cui_histogram_series] series) (count series) (impl/ref-ptr! wb [:scalar :double] sel-start) (impl/ref-ptr! wb [:scalar :double] sel-end) (impl/in-ptr! wb [:struct :cui_time_histogram_opts] opts)) (impl/read-struct :cui_time_histogram_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_time_histogram_result)] (raw/cui_time_histogram_ex dst ui (impl/str-ptr id) (impl/arg-val [:scalar :double] start) (impl/arg-val [:scalar :double] bucket-seconds) (impl/arg-val [:scalar :int] buckets) (impl/vec-ptr! wb [:struct :cui_histogram_series] series) (count series) (impl/ref-ptr! wb [:scalar :double] sel-start) (impl/ref-ptr! wb [:scalar :double] sel-end) (impl/in-ptr! wb [:struct :cui_time_histogram_opts] opts)) (impl/read-struct :cui_time_histogram_result dst)))))
 
 (defn coverage
   "cui_coverage_result cui_coverage_ex(cui_ctx * ui, const char * id, const cui_coverage_file * files, int count, const cui_coverage_opts * opts)"
   ([ui id files] (coverage ui id files nil))
   ([ui id files opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_coverage_result)] (raw/cui_coverage_ex dst ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_coverage_file] files) (count files) (impl/in-ptr! wb [:struct :cui_coverage_opts] opts)) (impl/read-struct :cui_coverage_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_coverage_result)] (raw/cui_coverage_ex dst ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_coverage_file] files) (count files) (impl/in-ptr! wb [:struct :cui_coverage_opts] opts)) (impl/read-struct :cui_coverage_result dst)))))
 
 (defn blame
   "cui_blame_result cui_blame_ex(cui_ctx * ui, const char * id, const char * const * lines, const int * line_commit, int line_count, const cui_blame_commit * commits, int commit_count, const cui_blame_opts * opts)"
   ([ui id lines line-commit commits] (blame ui id lines line-commit commits nil))
   ([ui id lines line-commit commits opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_blame_result)] (raw/cui_blame_ex dst ui (impl/str-arg id) lines (impl/vec-ptr! wb [:scalar :int] line-commit) (count line-commit) (impl/vec-ptr! wb [:struct :cui_blame_commit] commits) (count commits) (impl/in-ptr! wb [:struct :cui_blame_opts] opts)) (impl/read-struct :cui_blame_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_blame_result)] (raw/cui_blame_ex dst ui (impl/str-ptr id) lines (impl/vec-ptr! wb [:scalar :int] line-commit) (count line-commit) (impl/vec-ptr! wb [:struct :cui_blame_commit] commits) (count commits) (impl/in-ptr! wb [:struct :cui_blame_opts] opts)) (impl/read-struct :cui_blame_result dst)))))
 
 (defn feature-flags
   "cui_feature_flags_result cui_feature_flags_ex(cui_ctx * ui, const char * id, cui_feature_flag * flags, int count, const char * const * envs, int env_count, const cui_feature_flags_opts * opts)"
   ([ui id flags envs] (feature-flags ui id flags envs nil))
   ([ui id flags envs opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_feature_flags_result)] (raw/cui_feature_flags_ex dst ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_feature_flag] flags) (impl/ref-count flags) (impl/strs-ptr envs) (count envs) (impl/in-ptr! wb [:struct :cui_feature_flags_opts] opts)) (impl/read-struct :cui_feature_flags_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_feature_flags_result)] (raw/cui_feature_flags_ex dst ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_feature_flag] flags) (impl/ref-count flags) (impl/strs-ptr envs) (count envs) (impl/in-ptr! wb [:struct :cui_feature_flags_opts] opts)) (impl/read-struct :cui_feature_flags_result dst)))))
 
 (defn api-explorer
   "cui_api_explorer_result cui_api_explorer_ex(cui_ctx * ui, const char * id, const cui_api_endpoint * endpoints, int count, const cui_api_explorer_opts * opts)"
   ([ui id endpoints] (api-explorer ui id endpoints nil))
   ([ui id endpoints opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_api_explorer_result)] (raw/cui_api_explorer_ex dst ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_api_endpoint] endpoints) (count endpoints) (impl/in-ptr! wb [:struct :cui_api_explorer_opts] opts)) (impl/read-struct :cui_api_explorer_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_api_explorer_result)] (raw/cui_api_explorer_ex dst ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_api_endpoint] endpoints) (count endpoints) (impl/in-ptr! wb [:struct :cui_api_explorer_opts] opts)) (impl/read-struct :cui_api_explorer_result dst)))))
 
 (defn dot-chart
   "cui_dot_chart_result cui_dot_chart_ex(cui_ctx * ui, const char * id, const cui_dot_series * series, int series_count, int count, const cui_dot_chart_opts * opts)"
   ([ui id series count*] (dot-chart ui id series count* nil))
   ([ui id series count* opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_dot_chart_result)] (raw/cui_dot_chart_ex dst ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_dot_series] series) (count series) (impl/arg-val [:scalar :int] count*) (impl/in-ptr! wb [:struct :cui_dot_chart_opts] opts)) (impl/read-struct :cui_dot_chart_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_dot_chart_result)] (raw/cui_dot_chart_ex dst ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_dot_series] series) (count series) (impl/arg-val [:scalar :int] count*) (impl/in-ptr! wb [:struct :cui_dot_chart_opts] opts)) (impl/read-struct :cui_dot_chart_result dst)))))
 
 (defn event-track
   "cui_event_track_result cui_event_track_ex(cui_ctx * ui, const char * id, double * times, int * count, int capacity, double min, double max, const cui_event_track_opts * opts)"
   ([ui id times count* capacity min* max*] (event-track ui id times count* capacity min* max* nil))
   ([ui id times count* capacity min* max* opts]
-   (impl/with-call [wb] (let [dst (impl/alloc :cui_event_track_result)] (raw/cui_event_track_ex dst ui (impl/str-arg id) (impl/ref-ptr! wb [:scalar :double] times) (impl/ref-ptr! wb [:scalar :int] count*) (impl/arg-val [:scalar :int] capacity) (impl/arg-val [:scalar :double] min*) (impl/arg-val [:scalar :double] max*) (impl/in-ptr! wb [:struct :cui_event_track_opts] opts)) (impl/read-struct :cui_event_track_result dst)))))
+   (impl/with-call [wb] (let [dst (impl/alloc :cui_event_track_result)] (raw/cui_event_track_ex dst ui (impl/str-ptr id) (impl/ref-ptr! wb [:scalar :double] times) (impl/ref-ptr! wb [:scalar :int] count*) (impl/arg-val [:scalar :int] capacity) (impl/arg-val [:scalar :double] min*) (impl/arg-val [:scalar :double] max*) (impl/in-ptr! wb [:struct :cui_event_track_opts] opts)) (impl/read-struct :cui_event_track_result dst)))))
 
 (defn readout
   "void cui_readout_ex(cui_ctx * ui, const char * label, const char * value, const cui_readout_opts * opts)"
   ([ui label value] (readout ui label value nil))
   ([ui label value opts]
-   (impl/with-call [wb] (raw/cui_readout_ex ui (impl/str-arg label) (impl/str-arg value) (impl/in-ptr! wb [:struct :cui_readout_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_readout_ex ui (impl/str-ptr label) (impl/str-ptr value) (impl/in-ptr! wb [:struct :cui_readout_opts] opts)))))
 
 (defn dot-display
   "void cui_dot_display_ex(cui_ctx * ui, const char * text, const cui_dot_display_opts * opts)"
   ([ui text] (dot-display ui text nil))
   ([ui text opts]
-   (impl/with-call [wb] (raw/cui_dot_display_ex ui (impl/str-arg text) (impl/in-ptr! wb [:struct :cui_dot_display_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_dot_display_ex ui (impl/str-ptr text) (impl/in-ptr! wb [:struct :cui_dot_display_opts] opts)))))
 
 (defn format-bar
   "int cui_format_bar_ex(cui_ctx * ui, const char * id, cui_text_format * format, const cui_format_bar_opts * opts)"
   ([ui id format*] (format-bar ui id format* nil))
   ([ui id format* opts]
-   (impl/with-call [wb] (raw/cui_format_bar_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_text_format] format*) (impl/in-ptr! wb [:struct :cui_format_bar_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_format_bar_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_text_format] format*) (impl/in-ptr! wb [:struct :cui_format_bar_opts] opts)))))
 
 (defn live-cursors
   "void cui_live_cursors_ex(cui_ctx * ui, const char * id, const cui_live_user * users, int count, const cui_live_cursors_opts * opts)"
   ([ui id users] (live-cursors ui id users nil))
   ([ui id users opts]
-   (impl/with-call [wb] (raw/cui_live_cursors_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_live_user] users) (count users) (impl/in-ptr! wb [:struct :cui_live_cursors_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_live_cursors_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_live_user] users) (count users) (impl/in-ptr! wb [:struct :cui_live_cursors_opts] opts)))))
 
 (defn presence-pill
   "void cui_presence_pill_ex(cui_ctx * ui, const char * id, const cui_live_user * users, int count, const cui_presence_pill_opts * opts)"
   ([ui id users] (presence-pill ui id users nil))
   ([ui id users opts]
-   (impl/with-call [wb] (raw/cui_presence_pill_ex ui (impl/str-arg id) (impl/vec-ptr! wb [:struct :cui_live_user] users) (count users) (impl/in-ptr! wb [:struct :cui_presence_pill_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_presence_pill_ex ui (impl/str-ptr id) (impl/vec-ptr! wb [:struct :cui_live_user] users) (count users) (impl/in-ptr! wb [:struct :cui_presence_pill_opts] opts)))))
 
 (defn selection-ring
   "void cui_selection_ring_ex(cui_ctx * ui, cui_color color, const cui_selection_ring_opts * opts)"
@@ -2784,19 +2784,19 @@
   "int cui_canvas_controls_ex(cui_ctx * ui, const char * id, cui_node_view * view, const cui_canvas_controls_opts * opts)"
   ([ui id view] (canvas-controls ui id view nil))
   ([ui id view opts]
-   (impl/with-call [wb] (raw/cui_canvas_controls_ex ui (impl/str-arg id) (impl/ref-ptr! wb [:struct :cui_node_view] view) (impl/in-ptr! wb [:struct :cui_canvas_controls_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_canvas_controls_ex ui (impl/str-ptr id) (impl/ref-ptr! wb [:struct :cui_node_view] view) (impl/in-ptr! wb [:struct :cui_canvas_controls_opts] opts)))))
 
 (defn result-card
   "bool cui_result_card_ex(cui_ctx * ui, const char * id, cui_texture image, const char * title, const cui_result_card_opts * opts)"
   ([ui id image title] (result-card ui id image title nil))
   ([ui id image title opts]
-   (impl/with-call [wb] (raw/cui_result_card_ex ui (impl/str-arg id) (impl/arg-val [:scalar :uptr] image) (impl/str-arg title) (impl/in-ptr! wb [:struct :cui_result_card_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_result_card_ex ui (impl/str-ptr id) (impl/arg-val [:scalar :uptr] image) (impl/str-ptr title) (impl/in-ptr! wb [:struct :cui_result_card_opts] opts)))))
 
 (defn selection-bar
   "int cui_selection_bar_ex(cui_ctx * ui, const char * id, int count, const cui_selection_action * actions, int action_count, const cui_selection_bar_opts * opts)"
   ([ui id count* actions] (selection-bar ui id count* actions nil))
   ([ui id count* actions opts]
-   (impl/with-call [wb] (raw/cui_selection_bar_ex ui (impl/str-arg id) (impl/arg-val [:scalar :int] count*) (impl/vec-ptr! wb [:struct :cui_selection_action] actions) (count actions) (impl/in-ptr! wb [:struct :cui_selection_bar_opts] opts)))))
+   (impl/with-call [wb] (raw/cui_selection_bar_ex ui (impl/str-ptr id) (impl/arg-val [:scalar :int] count*) (impl/vec-ptr! wb [:struct :cui_selection_action] actions) (count actions) (impl/in-ptr! wb [:struct :cui_selection_bar_opts] opts)))))
 
 (defn draw-rect
   "void cui_draw_rect(cui_ctx * ui, cui_rect r, cui_corners radius, cui_color fill)"
@@ -2846,12 +2846,12 @@
 (defn draw-text
   "void cui_draw_text(cui_ctx * ui, cui_font font, float size, cui_vec2 pos, cui_color color, const char * text, int len)"
   [ui font size pos color text]
-  (impl/with-call [wb] (raw/cui_draw_text ui (impl/arg-val [:font] font) (impl/arg-val [:scalar :float] size) (impl/in-ptr! wb [:struct :cui_vec2] pos) (impl/in-ptr! wb [:struct :cui_color] color) (impl/str-arg text) (impl/utf8-len text))))
+  (impl/with-call [wb] (raw/cui_draw_text ui (impl/arg-val [:font] font) (impl/arg-val [:scalar :float] size) (impl/in-ptr! wb [:struct :cui_vec2] pos) (impl/in-ptr! wb [:struct :cui_color] color) (impl/str-ptr text) (impl/utf8-len text))))
 
 (defn draw-icon
   "void cui_draw_icon(cui_ctx * ui, const char * icon, cui_rect r, float size, cui_color color)"
   [ui icon r size color]
-  (impl/with-call [wb] (raw/cui_draw_icon ui (impl/str-arg icon) (impl/in-ptr! wb [:struct :cui_rect] r) (impl/arg-val [:scalar :float] size) (impl/in-ptr! wb [:struct :cui_color] color))))
+  (impl/with-call [wb] (raw/cui_draw_icon ui (impl/str-ptr icon) (impl/in-ptr! wb [:struct :cui_rect] r) (impl/arg-val [:scalar :float] size) (impl/in-ptr! wb [:struct :cui_color] color))))
 
 (defn draw-image
   "void cui_draw_image(cui_ctx * ui, cui_texture tex, cui_rect r, cui_rect uv, cui_corners radius, cui_color tint)"
@@ -2871,7 +2871,7 @@
 (defn canvas
   "cui_canvas_result cui_canvas(cui_ctx * ui, const char * id, cui_size width, cui_size height, cui_paint_fn paint, const void * user, size_t user_size)"
   [ui id width height paint user user-size]
-  (impl/with-call [wb] (let [dst (impl/alloc :cui_canvas_result)] (raw/cui_canvas dst ui (impl/str-arg id) (impl/in-ptr! wb [:struct :cui_size] width) (impl/in-ptr! wb [:struct :cui_size] height) paint user (impl/arg-val [:scalar :size_t] user-size)) (impl/read-struct :cui_canvas_result dst))))
+  (impl/with-call [wb] (let [dst (impl/alloc :cui_canvas_result)] (raw/cui_canvas dst ui (impl/str-ptr id) (impl/in-ptr! wb [:struct :cui_size] width) (impl/in-ptr! wb [:struct :cui_size] height) paint user (impl/arg-val [:scalar :size_t] user-size)) (impl/read-struct :cui_canvas_result dst))))
 
 (defn state
   "void * cui_state(cui_ctx * ui, cui_id id, size_t size)"
@@ -2927,7 +2927,7 @@
 (defn app-set-title
   "void cui_app_set_title(cui_app * app, const char * title)"
   [app title]
-  (raw/cui_app_set_title app (impl/str-arg title)))
+  (raw/cui_app_set_title app (impl/str-ptr title)))
 
 (defn app-set-size
   "void cui_app_set_size(cui_app * app, int width, int height)"
@@ -2967,7 +2967,7 @@
 (defn app-open-url
   "bool cui_app_open_url(const char * url)"
   [url]
-  (raw/cui_app_open_url (impl/str-arg url)))
+  (raw/cui_app_open_url (impl/str-ptr url)))
 
 (defn app-screenshot
   "bool cui_app_screenshot(cui_app * app, void * rgba, int width, int height)"
